@@ -2,7 +2,7 @@
 <html lang="he">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קרב טנקים: חזית הפלדה</title>
     <style>
         body { 
@@ -109,7 +109,6 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            /* הערה למנהל האתר: החלף את 'image_35eb8a.jpg' בקישור לתמונת הרקע שלך או העלה אותה לאותה התיקייה */
             background: linear-gradient(rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.45)), url('image_35eb8a.jpg') no-repeat center center;
             background-size: cover;
             display: flex; 
@@ -797,91 +796,6 @@
             transform: translateY(3px);
             box-shadow: none;
         }
-
-        /* --- התאמה לאתרים ולמובייל (Responsive Design & Touch Controls) --- */
-        @media (max-width: 800px) {
-            #menu-content, #shop-modal, #overlay, #pause-screen {
-                width: 95%;
-                max-width: 100%;
-                padding: 15px;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-            .game-title-header { font-size: 36px; }
-            .game-subtitle-header { font-size: 18px; }
-            .credentials-container {
-                flex-direction: column;
-                width: 100%;
-                max-width: 100%;
-            }
-            .player-input-box { width: 100%; }
-            .control-row { flex-wrap: wrap; justify-content: center; }
-            .control-row button, .control-row div { flex: 1 1 45%; margin-bottom: 8px; text-align: center; justify-content: center; }
-            .shop-tabs { flex-wrap: wrap; }
-            .shop-tab { flex: 1 1 40%; font-size: 12px; padding: 8px 4px; }
-            #ui { font-size: 16px; padding: 10px; flex-wrap: wrap; }
-            .hp-display { font-size: 20px; }
-            #wordInput { font-size: 14px; height: 60px; }
-            .bottom-bar { flex-direction: column; gap: 10px; }
-            .corner-actions { bottom: 10px; }
-        }
-
-        #mobile-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            display: none;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
-            z-index: 500;
-            pointer-events: none;
-            touch-action: none;
-        }
-        .dpad {
-            display: grid;
-            grid-template-columns: 60px 60px 60px;
-            grid-template-rows: 60px 60px 60px;
-            gap: 5px;
-            pointer-events: auto;
-        }
-        .dpad button {
-            background: rgba(15, 23, 42, 0.7);
-            border: 2px solid #3b82f6;
-            color: white;
-            border-radius: 12px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
-            transition: 0.1s;
-        }
-        .dpad #btn-up { grid-column: 2; grid-row: 1; }
-        .dpad #btn-left { grid-column: 1; grid-row: 2; }
-        .dpad #btn-right { grid-column: 3; grid-row: 2; }
-        .dpad #btn-down { grid-column: 2; grid-row: 3; }
-        
-        .action-pad {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-        }
-        #btn-fire {
-            width: 90px;
-            height: 90px;
-            background: rgba(239, 68, 68, 0.7);
-            border: 4px solid #fca5a5;
-            border-radius: 50%;
-            font-size: 36px;
-            cursor: pointer;
-            user-select: none;
-            transition: 0.1s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
     </style>
 </head>
 <body>
@@ -1273,57 +1187,40 @@
         <button class="alert-btn" onclick="closeCustomAlert()">אישור 🛡️</button>
     </div>
 
-    <!-- כפתורי שליטה למובייל ומסכי מגע -->
-    <div id="mobile-controls">
-        <div class="dpad">
-            <button id="btn-up">⬆️</button>
-            <button id="btn-left">⬅️</button>
-            <button id="btn-right">➡️</button>
-            <button id="btn-down">⬇️</button>
-        </div>
-        <div class="action-pad">
-            <button id="btn-fire">💥</button>
-        </div>
-    </div>
-
     <canvas id="g"></canvas>
 
     <!-- ייבוא ספריות Firebase לצורך ניהול ושמירת הרשימות והחנות בענן -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        // הגדרות Firebase - לשמירה בענן (רשות)
-        // אם תשאירו את האזור הזה מוסתר/ריק, המשחק יעבוד מעולה וישמור את כל הנתונים בדפדפן (מצב מקומי)!
-        // ==========================================
-        const firebaseConfig = {
-            // העתק לכאן את נתוני ה-Firebase שלך אם יש לך מסד נתונים, לדוגמה:
-            // apiKey: "AIzaSy...",
-            // authDomain: "your-app.firebaseapp.com",
-            // projectId: "your-app",
-            // storageBucket: "your-app.appspot.com",
-            // messagingSenderId: "123456789",
-            // appId: "1:123456789:web:abcdef"
-        };
-        const appId = "front-of-steel-tanks"; // מזהה ייחודי למשחק שלך עבור LocalStorage
-
-        let app, auth, db;
-        let isUsingCloud = false;
-
-        // מנסה לאתחל את הענן רק אם הזנת הגדרות Firebase פעילות
-        if (firebaseConfig && Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey) {
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                isUsingCloud = true;
-            } catch (e) {
-                console.error("שגיאה באתחול Firebase:", e);
-                isUsingCloud = false;
-            }
+        // אתחול בטוח של קונפיגורציית Firebase למניעת קריסות (קריטי!)
+        let firebaseConfig;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "mock-api-key",
+                authDomain: "mock-auth-domain.firebaseapp.com",
+                projectId: "mock-project-id",
+                storageBucket: "mock-storage-bucket.appspot.com",
+                messagingSenderId: "1234567890",
+                appId: "mock-app-id"
+            };
+        } catch (e) {
+            firebaseConfig = {
+                apiKey: "mock-api-key",
+                authDomain: "mock-auth-domain.firebaseapp.com",
+                projectId: "mock-project-id",
+                storageBucket: "mock-storage-bucket.appspot.com",
+                messagingSenderId: "1234567890",
+                appId: "mock-app-id"
+            };
         }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         const canvas = document.getElementById("g");
         const ctx = canvas.getContext("2d");
@@ -1347,12 +1244,11 @@
         let userLists = {}; 
         let unsubscribeLists = null; 
         let unsubscribeState = null; 
+        let isUsingCloud = true; // דגל חיווי האם הענן פעיל או עובדים מקומית
         let currentUsername = "טנקיסט_1"; // שם השחקן הפעיל כרגע
         let gameFrame = 0; // מונה פריימים לאנימציה של הזחלים
         let credentialsTimer = null; // דבל קליק/טיימר קלט לעדכון מאובטח של סיסמאות
         let authMode = "login"; // מצב כניסה: login / register
-
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
         // שדרוג: פיצול דגמי הטנק המפורט לגוף וצריח (Hulls and Turrets) בנפרד
         let dbState = {
@@ -1384,18 +1280,16 @@
             const uiHeight = gameRunning ? (uiElement ? uiElement.offsetHeight : 70) : 0;
             const availableHeight = wHeight - uiHeight;
             
-            let scaleX = wWidth / baseWidth;
-            let scaleY = gameRunning ? (availableHeight / baseHeight) : (wHeight / baseHeight);
-            let scale = Math.min(scaleX, scaleY) * 0.95; // קמצוץ בטיחות למניעת פסי גלילה
+            let scale = Math.min(wWidth / baseWidth, availableHeight / baseHeight);
             if (isNaN(scale) || scale <= 0) scale = 1;
             
             if (wrapper && gameRunning === false) {
-                wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                wrapper.style.transform = `scale(${scale})`;
                 wrapper.style.position = 'absolute';
                 wrapper.style.left = '50%';
                 wrapper.style.top = '50%';
-                wrapper.style.marginLeft = '0px';
-                wrapper.style.marginTop = '0px';
+                wrapper.style.marginLeft = `-${baseWidth / 2}px`;
+                wrapper.style.marginTop = `-${baseHeight / 2}px`;
             }
             
             if (gameCanvas) {
@@ -1431,7 +1325,7 @@
 
         // טיימר בטיחות: אם תוך 3 שניות לא התחברנו, עוברים אוטומטית למצב מקומי
         let authTimeout = setTimeout(() => {
-            if (isUsingCloud && (!auth || !auth.currentUser)) {
+            if (!auth.currentUser || !isUsingCloud) {
                 switchToLocalMode("חיבור לענן התעכב (טיימר 3 שניות)");
             }
         }, 3000);
@@ -1633,7 +1527,6 @@
             document.getElementById("pauseBtn").style.display = "none";
             document.getElementById("ui").style.display = "none";
             document.getElementById("g").style.display = "none";
-            document.getElementById("mobile-controls").style.display = "none";
             document.getElementById("start-screen").style.display = "flex";
             if (window.speechSynthesis) window.speechSynthesis.cancel();
             resizeGame();
@@ -1712,6 +1605,47 @@
             } catch (e) {
                 console.log("Local speech synthesis crashed, using Gemini TTS:", e);
                 speakWithGeminiTTS(current.q, targetLang);
+            }
+        }
+
+        audioBtn.addEventListener('click', () => {
+            unlockBrowserAudio(); 
+            speakWord();
+        });
+
+        if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                console.log("Voices loaded successfully");
+            };
+        }
+
+        function showHelp() {
+            showCustomAlert("📖 הוראות והדרכה", "קרב טנקים: חזית הפלדה - הדרכה:\n\n1. פוצץ את טנקי האויב הנושאים את התרגום הנכון למילה שמופיעה למעלה.\n2. תנועה: מקשי החצים במקלדת (קדימה, אחורה, פניות ימינה ושמאלה).\n3. ירי: מקש רווח.\n4. אסוף קוביות '+' ירוקות לקבלת לב מלא ובונוס 20 נקודות ומטבעות פלדה!\n5. הימנע מפגיעה בטנקים שגויים (מוריד חצי לב!).\n6. השהייה: לחץ על 'השהה' ב-UI, או במקלדת על מקש P או Escape.");
+        }
+
+        async function autoTranslate() {
+            const input = document.getElementById("wordInput");
+            const status = document.getElementById("status");
+            const raw = input.value.split('\n').filter(w => w.trim());
+            if (!raw.length) return;
+            status.innerText = "מתרגם מילים...";
+            let pair = mode === "en-he" ? "en|he" : "he-en" ? "he|en" : "he|en";
+            try {
+                let lines = [];
+                for (let w of raw) {
+                    let text = w.split('=')[0].trim();
+                    const res = await fetch("https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=" + pair);
+                    const data = await res.json();
+                    lines.push(text + "=" + data.responseData.translatedText.trim());
+                }
+                input.value = lines.join('\n');
+                status.style.color = "#4ade80";
+                status.innerText = "התרגום הושלם בהצלחה!";
+                playBeep(880, 0.2); 
+            } catch(e) { 
+                status.style.color = "#f87171";
+                status.innerText = "שגיאה בסנכרון התרגום."; 
+                playBeep(220, 0.3, "sawtooth"); 
             }
         }
 
@@ -2244,9 +2178,6 @@
                 }
                 updateShopUI();
                 updateTopCoinsUI();
-                
-                // שדרוג: טעינה חוזרת ומסודרת של רשימות המילים המשוייכות למשתמש החדש!
-                loadUserLists();
             } catch (error) {
                 console.error("Error loading player state from cloud: ", error);
                 switchToLocalMode("נכשלה טעינת נתוני שדרוגים מאובטחת מהענן");
@@ -2289,6 +2220,9 @@
 
                 // טעינת המצב של השחקן (מענן או מקומית) מבוסס שם וסיסמה
                 loadPlayerState(nameInput);
+                
+                // שדרוג: טעינה חוזרת ומסודרת של רשימות המילים המשוייכות למשתמש החדש!
+                loadUserLists();
             }, 500);
         }
         window.onCredentialsChange = onCredentialsChange;
@@ -2711,7 +2645,7 @@
                 btn.innerText = "בחר 🌀";
                 btn.className = "shop-buy-btn";
                 btn.style.background = "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)";
-                btn.style.color = "white";
+                ctx.fillStyle = "white";
                 btn.style.borderColor = "#111827";
                 btn.disabled = false;
             } else {
@@ -2724,30 +2658,27 @@
             }
         }
 
-        // אתחול כניסה לענן (תומך באתר פרטי עצמאי)
+        // אתחול כניסה מאובטחת בעזרת Firebase Auth (תואם לחוק 3)
         const initAuth = async () => {
-            if (!isUsingCloud) {
-                switchToLocalMode("מערכת Firebase לא הוגדרה. עובד במצב שמירה מקומית (Offline).");
-                return;
-            }
             try {
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (e) {
                 console.error("Auth initialization failed:", e);
-                switchToLocalMode("נכשלה התחברות לענן, ייתכן שיש צורך לאפשר הרשמה אנונימית ב-Firebase שלכם.");
+                switchToLocalMode("נכשלה התחברות מאובטחת");
             }
         };
         initAuth();
 
-        if (isUsingCloud) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    clearTimeout(authTimeout); 
-                    loadUserLists();
-                    loadPlayerState(currentUsername); 
-                }
-            });
-        }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadUserLists();
+                loadPlayerState(currentUsername); 
+            }
+        });
 
         // חשיפת פונקציות חלון גלובליות לשילוב בממשק ה-HTML
         window.processAndStart = processAndStart;
@@ -2834,10 +2765,6 @@
             pauseBtn.innerText = "השהה ⏸️";
             pauseBtn.style.background = "#3b82f6"; 
             pauseBtn.style.display = "inline-block";
-            
-            if (isTouchDevice) {
-                document.getElementById("mobile-controls").style.display = "flex";
-            }
             
             gameRunning = true; alive = true; gamePaused = false;
             resetGame();
@@ -2928,45 +2855,6 @@
         });
         window.addEventListener("keyup", e => { keys[e.key] = false; });
 
-        // אתחול כפתורי מגע (Mobile Touch Controls)
-        function bindTouch(btnId, keyMapping) {
-            const btn = document.getElementById(btnId);
-            if (!btn) return;
-            
-            const press = (e) => {
-                e.preventDefault();
-                if (!gameRunning || gamePaused) return;
-                keys[keyMapping] = true;
-                btn.style.transform = 'scale(0.85)';
-                
-                // הוספת ירי בלחיצה למובייל
-                if(keyMapping === " ") {
-                    const now = Date.now();
-                    const cooldown = 450 - (dbState.upgrades.turret * 80);
-                    if (now - lastShotTime > cooldown) {
-                        bullets.push({x: tank.x + Math.cos(tank.angle)*25, y: tank.y + Math.sin(tank.angle)*25, vx: Math.cos(tank.angle)*6, vy: Math.sin(tank.angle)*6, isFromMinion: false});
-                        playBeep(180, 0.1, "triangle");
-                        lastShotTime = now;
-                    }
-                }
-            };
-            const release = (e) => {
-                e.preventDefault();
-                keys[keyMapping] = false;
-                btn.style.transform = 'scale(1)';
-            };
-
-            btn.addEventListener('touchstart', press, {passive: false});
-            btn.addEventListener('touchend', release, {passive: false});
-            btn.addEventListener('touchcancel', release, {passive: false});
-        }
-
-        bindTouch('btn-up', 'ArrowUp');
-        bindTouch('btn-down', 'ArrowDown');
-        bindTouch('btn-left', 'ArrowLeft');
-        bindTouch('btn-right', 'ArrowRight');
-        bindTouch('btn-fire', ' ');
-
         function collidesWithWalls(x, y, r) {
             for(let w of walls) {
                 if(x + r > w.x && x - r < w.x + w.w && y + r > w.y && y - r < w.y + w.h) return true;
@@ -2982,7 +2870,6 @@
                 document.getElementById("finalScore").innerText = score;
                 document.getElementById("overlay").style.display = "block";
                 document.getElementById("pauseBtn").style.display = "none";
-                document.getElementById("mobile-controls").style.display = "none";
                 playBeep(150, 0.6, "sawtooth");
             }
         }
