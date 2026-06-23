@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז משחקים: אקדמיית האנגלית</title>
+    <style>
+        /* =========================================
+           GLOBAL & HUB CSS
+        ========================================= */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #05050a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #main-hub {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            background: radial-gradient(circle at center, #1a1a35 0%, #090d16 100%);
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 10000;
+        }
+
+        .hub-title {
+            font-size: 52px;
+            font-weight: 900;
+            color: #facc15;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8), 0 0 20px rgba(250, 204, 21, 0.4);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .hub-subtitle {
+            font-size: 20px;
+            color: #cbd5e1;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .games-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 3px solid #475569;
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .game-card:hover {
+            transform: translateY(-15px);
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #38bdf8;
+            box-shadow: 0 15px 40px rgba(56, 189, 248, 0.3);
+        }
+
+        .game-card.tanks:hover { border-color: #facc15; box-shadow: 0 15px 40px rgba(250, 204, 21, 0.3); }
+        .game-card.pacman:hover { border-color: #ffb8ff; box-shadow: 0 15px 40px rgba(255, 184, 255, 0.3); }
+
+        .game-card .icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
+
+        .game-card h2 { margin: 0 0 15px 0; color: #fff; font-size: 28px; }
+        .game-card p { color: #94a3b8; font-size: 16px; margin: 0; line-height: 1.5; }
+
+        .hub-btn-back {
+            position: fixed;
+            top: 20px;
+            left: 20px; /* צד שמאל בשביל עברית */
+            background: rgba(15, 23, 42, 0.9);
+            color: #fff;
+            border: 2px solid #ef4444;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 99999;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .hub-btn-back:hover { background: #ef4444; }
+
+        /* =========================================
+           TANKS APP CSS (FULL ORIGINAL RESTORED)
+        ========================================= */
+        #tanks-app {
+            display: none;
+            background: #090d16; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            overflow: hidden; 
+            user-select: none;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0; left: 0;
+            direction: ltr; /* Keeping game canvas direction */
+        }
+        
+        #tanks-app canvas { 
+            background: #1e293b; 
+            border: 6px solid #334155; 
+            display: none; 
+            margin: auto; 
+            border-radius: 16px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8); 
+            box-sizing: border-box;
+        }
+        
+        #tanks-app #ui { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 24px; 
+            padding: 15px 30px; 
+            background: linear-gradient(180deg, #090d16, #1e293b); 
+            border-bottom: 4px solid #facc15; 
+            display: none; 
+            justify-content: space-around; 
+            align-items: center; 
+            font-weight: 600; 
+            z-index: 100;
+        }
+        #tanks-app .hp-display { color: #f87171; font-size: 32px; letter-spacing: 3px; }
+        
+        #tanks-app #audioBtn { 
+            background: #eab308; border: none; border-radius: 50%; width: 44px; height: 44px; 
+            cursor: pointer; font-size: 20px; color: #000; margin-left: 12px; transition: 0.2s; 
+            vertical-align: middle; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.4); 
+        }
+        #tanks-app #audioBtn:hover { background: #facc15; transform: scale(1.1); }
+
+        #tanks-app #autoAudioBtn { 
+            background: #475569; border: 2px solid #334155; border-radius: 12px; height: 44px; 
+            padding: 0 15px; cursor: pointer; font-size: 16px; color: #cbd5e1; margin-left: 8px; 
+            transition: 0.2s; vertical-align: middle; font-weight: bold;
+        }
+        #tanks-app #autoAudioBtn:hover { background: #64748b; color: white; }
+        #tanks-app #autoAudioBtn.on {
+            background: #22c55e; border-color: #16a34a; color: white; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4);
+        }
+
+        #tanks-app #pauseBtn {
+            background: #3b82f6; border: none; border-radius: 12px; height: 44px; padding: 0 15px;
+            cursor: pointer; font-size: 16px; color: white; margin-left: 8px; transition: 0.2s; 
+            vertical-align: middle; font-weight: bold; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        #tanks-app #pauseBtn:hover { background: #60a5fa; }
+
+        #tanks-app #start-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.45));
+            background-size: cover; display: flex; justify-content: center; align-items: center; 
+            z-index: 200; overflow: hidden;
+        }
+
+        #tanks-app .viewport-wrapper {
+            position: absolute; width: 1000px; height: 700px; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; transform-origin: center center;
+        }
+
+        #tanks-app .scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 199; opacity: 0.3;
+        }
+
+        #tanks-app .game-title-header {
+            font-size: 52px; font-weight: 900; font-family: 'Segoe UI', Impact, sans-serif;
+            color: #ffffff; text-shadow: -3px -3px 0 #1e293b, 3px -3px 0 #1e293b, -3px 3px 0 #1e293b, 3px 3px 0 #1e293b, 0px 6px 15px rgba(0,0,0,0.9), 0px 0px 30px rgba(234, 179, 8, 0.4);
+            margin: 0; padding: 0; letter-spacing: 1px; z-index: 5;
+        }
+        #tanks-app .game-subtitle-header {
+            font-size: 24px; font-weight: bold; color: #f1f5f9; text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            margin-top: 3px; margin-bottom: 12px; z-index: 5;
+        }
+
+        #tanks-app #menu-content { 
+            background: linear-gradient(180deg, rgba(75, 85, 99, 0.9) 0%, rgba(31, 41, 55, 0.95) 100%); 
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            border: 4px solid #4b5563; box-shadow: inset 0 2px 4px rgba(255,255,255,0.25), 0 30px 60px rgba(0,0,0,0.95);
+            border-radius: 16px; width: 760px; padding: 18px; position: relative; box-sizing: border-box; z-index: 5;
+        }
+
+        #tanks-app .gear {
+            position: absolute; width: 55px; height: 55px; background: radial-gradient(circle, #4b5563 30%, #111827 80%);
+            border: 4px dashed #9ca3af; border-radius: 50%; opacity: 0.95; box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3);
+            animation: tanks_spin 20s linear infinite;
+        }
+        #tanks-app .gear.left { left: -28px; top: -10px; }
+        #tanks-app .gear.right { right: -28px; top: -10px; animation-direction: reverse; }
+
+        @keyframes tanks_spin { 100% { transform: rotate(360deg); } }
+
+        #tanks-app .screw {
+            position: absolute; width: 14px; height: 14px; background: #9ca3af; border: 2px solid #111827;
+            border-radius: 50%; box-shadow: inset 1px 1px 3px #ffffff, 1px 2px 4px rgba(0,0,0,0.6);
+        }
+        #tanks-app .screw.tl { top: 12px; left: 12px; } #tanks-app .screw.tr { top: 12px; right: 12px; }
+        #tanks-app .screw.bl { bottom: 12px; left: 12px; } #tanks-app .screw.br { bottom: 12px; right: 12px; }
+
+        #tanks-app .hazard-strip {
+            height: 8px; background: repeating-linear-gradient(45deg, #eab308, #eab308 10px, #111827 10px, #111827 20px);
+            border-radius: 4px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        #tanks-app .mode-select-box { text-align: right; margin-bottom: 10px; direction: rtl; }
+        #tanks-app .mode-select-box label { color: #cbd5e1; font-size: 13px; font-weight: bold; margin-bottom: 3px; display: block; }
+        #tanks-app .mode-select-box select { width: 100%; background: #111827; color: white; border: 2px solid #374151; padding: 8px; border-radius: 10px; font-size: 14px; font-weight: bold; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        #tanks-app .mode-select-box select:focus { border-color: #facc15; }
+        
+        #tanks-app textarea { 
+            width: 100%; height: 80px; background: #1e293b; color: #cbd5e1; border: 3px solid #374151; 
+            outline: 2px solid #facc15; border-radius: 10px; padding: 10px; font-size: 17px; font-family: inherit;
+            resize: none; transition: 0.3s; box-sizing: border-box; text-align: right; direction: rtl; 
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.9); margin-bottom: 15px;
+        }
+        #tanks-app textarea::placeholder { color: #64748b; }
+
+        #tanks-app .control-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 12px; }
+
+        #tanks-app button.btn-green {
+            background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); color: white; border: 2px solid #14532d;
+            border-radius: 8px; padding: 10px 20px; font-size: 15px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 4px 0px #14532d, 0 6px 12px rgba(0,0,0,0.5); transition: all 0.1s ease; flex-grow: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        #tanks-app button.btn-green:hover { background: linear-gradient(180deg, #4ade80 0%, #166534 100%); box-shadow: 0 4px 0px #14532d, 0 8px 16px rgba(0,0,0,0.6); }
+        #tanks-app button.btn-green:active { transform: translateY(4px); box-shadow: none; }
+
+        #tanks-app button.btn-gold {
+            background: linear-gradient(180deg, #facc15 0%, #a16207 100%); color: #111827; border: 2px solid #713f12;
+            border-radius: 8px; padding: 10px 20px; font-size: 15px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 4px 0px #713f12, 0 6px 12px rgba(0,0,0,0.5); transition: all 0.1s ease; flex-grow: 0.8; text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+        }
+        #tanks-app button.btn-gold:hover { background: linear-gradient(180deg, #fef08a 0%, #854d0e 100%); box-shadow: 0 4px 0px #713f12, 0 8px 16px rgba(0,0,0,0.6); }
+        #tanks-app button.btn-gold:active { transform: translateY(4px); box-shadow: none; }
+
+        #tanks-app button.btn-dark-metal {
+            background: linear-gradient(180deg, #4b5563 0%, #1f2937 100%); color: #f3f4f6; border: 2px solid #111827;
+            border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0px #111827, 0 6px 12px rgba(0,0,0,0.5); transition: all 0.1s ease; white-space: nowrap;
+        }
+        #tanks-app button.btn-dark-metal:hover { background: linear-gradient(180deg, #6b7280 0%, #374151 100%); box-shadow: 0 4px 0px #111827, 0 8px 16px rgba(0,0,0,0.6); }
+        #tanks-app button.btn-dark-metal:active { transform: translateY(4px); box-shadow: none; }
+
+        #tanks-app .language-status-display {
+            background: #111827; border: 2px solid #374151; border-radius: 8px; padding: 8px 12px;
+            font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; color: #e5e7eb; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        #tanks-app .language-status-display img { width: 20px; height: 14px; border-radius: 2px; }
+
+        #tanks-app .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 12px; border-top: 2px dashed #4b5563; }
+
+        #tanks-app .volume-box { display: flex; align-items: center; gap: 12px; background: #111827; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        #tanks-app .volume-box span { font-size: 16px; color: #9ca3af; }
+        #tanks-app .volume-box input[type="range"] { width: 100px; accent-color: #eab308; background: #4b5563; height: 6px; border-radius: 3px; cursor: pointer; }
+
+        #tanks-app .credentials-container { display: flex; flex-direction: row; gap: 6px; width: auto; flex-grow: 1; max-width: 330px; margin: 0 10px; }
+        #tanks-app .player-input-box { display: flex; align-items: center; gap: 6px; background: #111827; padding: 6px 10px; border-radius: 8px; border: 1px solid #374151; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); box-sizing: border-box; width: 50%; }
+        #tanks-app .player-input-box span { font-size: 15px; color: #9ca3af; }
+        #tanks-app .player-input-box input { background: transparent; border: none; color: #f3f4f6; font-family: inherit; font-size: 12px; font-weight: bold; outline: none; width: 100%; text-align: right; }
+
+        #tanks-app .corner-actions { position: absolute; bottom: 20px; display: flex; gap: 15px; z-index: 250; }
+        #tanks-app .corner-actions.left { left: 20px; }
+        #tanks-app .corner-actions.right { right: 20px; }
+        
+        #tanks-app .round-action-btn {
+            background: linear-gradient(180deg, #4b5563 0%, #1f2937 100%); border: 2px solid #111827; color: white;
+            border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 65px; transition: all 0.2s ease;
+        }
+        #tanks-app .round-action-btn:hover { background: linear-gradient(180deg, #6b7280 0%, #374151 100%); transform: scale(1.05); }
+        #tanks-app .round-action-btn span.icon { font-size: 20px; margin-bottom: 3px; }
+
+        #tanks-app #status { font-size: 14px; color: #38bdf8; text-align: center; margin-top: 8px; height: 18px; font-weight: bold; }
+        
+        #tanks-app #overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 50px; border-radius: 24px; border: 4px solid #ee6c4d; text-align: center; z-index: 300; display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+        #tanks-app #pause-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 50px; border-radius: 24px; border: 4px solid #3b82f6; text-align: center; z-index: 300; display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+
+        #tanks-app #shop-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 740px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 4px solid #eab308; border-radius: 20px; padding: 25px; z-index: 250; display: none;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.95), inset 0 2px 4px rgba(255,255,255,0.1); direction: rtl; text-align: right;
+        }
+
+        #tanks-app .shop-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #4b5563; padding-bottom: 12px; margin-bottom: 20px; }
+        #tanks-app .shop-title { font-size: 28px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; }
+        #tanks-app .shop-coins-badge { background: #1e293b; border: 2px solid #eab308; padding: 8px 16px; border-radius: 12px; font-size: 18px; font-weight: bold; color: #facc15; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #tanks-app .shop-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        #tanks-app .shop-tab { flex-grow: 1; padding: 10px; background: #1e293b; color: #9ca3af; border: 2px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-align: center; transition: 0.2s; }
+        #tanks-app .shop-tab.active { background: #eab308; color: #0f172a; border-color: #facc15; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.3); }
+
+        #tanks-app .shop-content { display: grid; grid-template-columns: 1fr; gap: 15px; max-height: 320px; overflow-y: auto; padding-left: 5px; }
+        #tanks-app .shop-content::-webkit-scrollbar { width: 8px; }
+        #tanks-app .shop-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+        #tanks-app .shop-item-card { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 15px; transition: 0.2s; }
+        #tanks-app .shop-item-card:hover { border-color: #4b5563; }
+        #tanks-app .shop-item-info { display: flex; flex-direction: column; gap: 5px; flex-grow: 1; }
+        #tanks-app .shop-item-title { font-size: 18px; font-weight: bold; color: white; }
+        #tanks-app .shop-item-desc { font-size: 13px; color: #9ca3af; }
+        #tanks-app .upgrade-progress-dots { display: flex; gap: 6px; margin-top: 5px; }
+        #tanks-app .progress-dot { width: 25px; height: 6px; background: #475569; border-radius: 3px; }
+        #tanks-app .progress-dot.active { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+        #tanks-app .shop-buy-btn { background: linear-gradient(180deg, #eab308 0%, #a16207 100%); color: #0f172a; border: 2px solid #713f12; border-radius: 8px; padding: 10px 18px; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 0 #713f12, 0 4px 8px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 6px; transition: all 0.1s ease; min-width: 110px; justify-content: center; }
+        #tanks-app .shop-buy-btn:hover { background: linear-gradient(180deg, #facc15 0%, #854d0e 100%); }
+        #tanks-app .shop-buy-btn:active { transform: translateY(3px); box-shadow: none; }
+        #tanks-app .shop-buy-btn.maxed { background: #334155 !important; color: #64748b !important; border-color: #1e293b !important; box-shadow: none !important; cursor: not-allowed; }
+        #tanks-app .shop-buy-btn.selected { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important; color: white !important; border-color: #14532d !important; box-shadow: none !important; }
+
+        #tanks-app .shop-close-btn { margin-top: 20px; background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); color: white; border: 2px solid #991b1b; border-radius: 10px; padding: 10px 24px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #991b1b; transition: 0.1s; }
+        #tanks-app .shop-close-btn:hover { background: linear-gradient(180deg, #f87171 0%, #991b1b 100%); }
+        #tanks-app .shop-close-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #tanks-app #custom-alert { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 480px; background: rgba(15, 23, 42, 0.98); border: 4px solid #facc15; border-radius: 16px; padding: 25px; z-index: 400; display: none; box-shadow: 0 25px 50px rgba(0,0,0,0.95); direction: rtl; text-align: right; }
+        #tanks-app #custom-alert h2 { margin-top: 0; color: #facc15; font-size: 24px; border-bottom: 2px solid #1e293b; padding-bottom: 8px; }
+        #tanks-app #custom-alert p { font-size: 16px; line-height: 1.5; color: #e2e8f0; margin: 15px 0 20px 0; white-space: pre-line; }
+        #tanks-app #custom-alert .alert-btn { background: linear-gradient(180deg, #eab308 0%, #a16207 100%); color: #0f172a; border: 2px solid #713f12; border-radius: 8px; padding: 8px 24px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 0 #713f12; float: left; }
+        #tanks-app #custom-alert .alert-btn:active { transform: translateY(3px); box-shadow: none; }
+
+
+        /* =========================================
+           PACMAN APP CSS (Scoped)
+        ========================================= */
+        #pacman-app {
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100vw;
+            height: 100vh;
+            background-color: #0b0b16; 
+            color: #ffb8ff; 
+            position: absolute;
+            top: 0; left: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            text-align: center;
+        }
+        
+        #pacman-app h1, #pacman-app h2, #pacman-app h3 { margin: 10px 0; text-align: center; }
+
+        #pacman-app #setup-screen { display: flex; flex-direction: column; width: 100%; max-width: 600px; background: #111125; padding: 20px; border-radius: 20px; border: 3px solid #ffb8ff; box-sizing: border-box; box-shadow: 0 5px 25px rgba(255, 184, 255, 0.15); margin: auto; }
+        
+        #pacman-app .voice-settings { background: #16162a; padding: 12px 20px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; user-select: none; }
+
+        #pacman-app .bulk-translation-area { background: #16162a; border: 2px dashed #00ffff; padding: 20px; border-radius: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; }
+        #pacman-app .bulk-textarea { width: 100%; height: 120px; padding: 12px; background: #0b0b16; border: 2px solid #444; color: #fff; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; resize: vertical; font-family: monospace, 'Segoe UI'; text-align: left; direction: ltr; }
+        #pacman-app .bulk-textarea:focus { border-color: #ffb8ff; }
+        #pacman-app .translation-loader { display: none; color: #00ffff; font-weight: bold; font-size: 15px; text-align: center; margin: 5px 0; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        #pacman-app .btn-action { padding: 12px 20px; background: #222; color: #fff; border: 2px solid #ffb8ff; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; }
+        #pacman-app .btn-action:hover { background: #ffb8ff; color: #000; }
+        #pacman-app .btn-action:disabled { background: #444; color: #888; border-color: #666; cursor: not-allowed; }
+
+        #pacman-app .words-table-container { max-height: 180px; overflow-y: auto; border: 1px solid #333; border-radius: 8px; background: #0b0b16; margin-bottom: 20px; }
+        #pacman-app .words-table { width: 100%; border-collapse: collapse; text-align: right; }
+        #pacman-app .words-table th, #pacman-app .words-table td { padding: 10px 12px; border-bottom: 1px solid #222; }
+        #pacman-app .words-table th { background: #1a1a35; position: sticky; top: 0; color: #ffb8ff; z-index: 10; }
+        #pacman-app .delete-btn { background: none; border: none; color: #ff4444; cursor: pointer; font-size: 16px; }
+        #pacman-app .delete-btn:hover { color: #ff8888; transform: scale(1.1); }
+
+        #pacman-app .controls-row { display: flex; gap: 10px; }
+        #pacman-app .btn-play { flex: 2; padding: 15px; background: #00ffff; color: #000; font-size: 20px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); transition: 0.2s; }
+        #pacman-app .btn-play:hover { background: #fff; box-shadow: 0 0 20px #fff; }
+        #pacman-app .btn-play:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+        #pacman-app .btn-reset { flex: 1; padding: 15px; background: #222; color: #ff4444; border: 2px solid #ff4444; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        #pacman-app .btn-reset:hover { background: #ff4444; color: #000; }
+        
+        #pacman-app #game-container { display: none; flex-direction: column; align-items: center; position: relative; width: 100%; max-width: 540px; margin: auto; }
+        #pacman-app canvas { border: 4px solid #4444ff; background-color: #000; width: 100%; max-width: 520px; height: auto; border-radius: 10px; image-rendering: pixelated; margin: auto; display: block; }
+        
+        #pacman-app .ui { text-align: center; margin-bottom: 10px; width: 100%; }
+        #pacman-app .word-to-find { font-size: 26px; color: #fff; font-weight: bold; background: #16162a; padding: 8px 16px; border-radius: 15px; border: 3px solid #ffb8ff; margin-bottom: 10px; display: inline-block; }
+        #pacman-app .stats-row { display: flex; justify-content: space-around; font-size: 18px; color: #00ffff; width: 100%; }
+        #pacman-app .btn-back { margin-top: 15px; padding: 10px 25px; background: #111; color: white; border: 2px solid #ffb8ff; cursor: pointer; border-radius: 8px; font-weight: bold; }
+
+        #pacman-app #game-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(11, 11, 22, 0.95); border: 4px solid #ffb8ff; padding: 30px; border-radius: 20px; text-align: center; z-index: 1000; width: 80%; max-width: 280px; box-shadow: 0 0 30px #ffb8ff; }
+        #pacman-app #modal-title { font-size: 28px; margin-bottom: 20px; color: #fff; font-weight: bold; }
+        #pacman-app .modal-btn { display: block; width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 2px solid #00ffff; color: #fff; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #pacman-app .modal-btn:hover { background: #00ffff; color: #000; }
+        #pacman-app .modal-btn.primary { border-color: #ffb8ff; }
+
+        #pacman-app #bonus-msg { position: absolute; color: #00ff00; font-weight: bold; font-size: 30px; display: none; animation: floatUp 1s forwards; z-index: 100; pointer-events: none; }
+        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100px); } }
+
+        #pacman-app #mobile-controls { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 10px; justify-content: center; margin-top: 15px; width: 100%; }
+        #pacman-app .dpad-btn { background: #222; border: 2px solid #ffb8ff; border-radius: 50%; color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); touch-action: manipulation; }
+        #pacman-app .dpad-btn:active { background: #ffb8ff; color: black; }
+        #pacman-app .dpad-up { grid-column: 2; grid-row: 1; } #pacman-app .dpad-left { grid-column: 1; grid-row: 2; } #pacman-app .dpad-right { grid-column: 3; grid-row: 2; } #pacman-app .dpad-down { grid-column: 2; grid-row: 3; }
+
+        #pacman-app .toast { position: fixed; bottom: 20px; background: #111125; color: #fff; padding: 12px 24px; border-radius: 10px; border-left: 4px solid #00ffff; border-right: 4px solid #00ffff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; font-weight: bold; text-align: center; max-width: 80%; left: 50%; transform: translateX(-50%);}
+        #pacman-app .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================
+         MAIN HUB SCREEN
+    =========================================== -->
+    <div id="main-hub">
+        <h1 class="hub-title">אקדמיית האנגלית</h1>
+        <p class="hub-subtitle">בחר איזה משחק לשחק ולמד אנגלית בכיף!</p>
+        
+        <div class="games-container">
+            <div class="game-card tanks" onclick="openGame('tanks')">
+                <div class="icon">🚜</div>
+                <h2>חזית הפלדה</h2>
+                <p>השמד טנקי אויב שנושאים את התרגום הנכון. כולל חנות שדרוגים מתקדמת ומערכת משתמשים.</p>
+            </div>
+            
+            <div class="game-card pacman" onclick="openGame('pacman')">
+                <div class="icon">👻</div>
+                <h2>פקמן אנגלית</h2>
+                <p>אכול את התשובה הנכונה וברח מהרוחות. כולל מערכת תרגום חכמה להזנת רשימות מילים משלך!</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         TANKS GAME CONTAINER (RESTORED ORIGINAL)
+    =========================================== -->
+    <div id="tanks-app">
+        <button class="hub-btn-back" onclick="returnToHub()">חזרה לתפריט 🏠</button>
+        
+        <!-- סרגל עליון לתצוגת המשחק הפעיל -->
+        <div id="ui">
+            <div>
+                Target: <span id="target" style="color:#e0fbfc; font-weight: bold;"></span> 
+                <button id="audioBtn" title="השמע מילה נוכחית">🔊</button>
+                <button id="autoAudioBtn" onclick="toggleAutoAudio()" title="הפעל או כבה הקראה אוטומטית">שמע אוטומטי ❌</button>
+                <button id="pauseBtn" onclick="togglePause()" title="השהה משחק" style="display: none;">השהה ⏸️</button>
+            </div>
+            <div class="hp-display" id="hp">❤️❤️❤️❤️❤️</div>
+            <div style="color: #facc15; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+                מטבעות: <span id="coinsDisplay">0</span> 🪙
+            </div>
+            <div>Score: <span id="score" style="color:#98c1d9;">0</span></div>
+        </div>
+        
+        <!-- מסך הפתיחה -->
+        <div id="start-screen">
+            <div class="viewport-wrapper">
+                <div class="scanlines"></div>
+                <div class="game-title-header">קרב טנקים: חזית הפלדה</div>
+                <div class="game-subtitle-header">דף פתיחה</div>
+
+                <!-- קונסולת המשחק המרכזית -->
+                <div id="menu-content">
+                    <div class="gear left"></div>
+                    <div class="gear right"></div>
+                    <div class="screw tl"></div>
+                    <div class="screw tr"></div>
+                    <div class="screw bl"></div>
+                    <div class="screw br"></div>
+                    <div class="hazard-strip"></div>
+
+                    <!-- טאבים להתחברות והרשמה -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; width: 100%; box-sizing: border-box; padding: 0 10px;">
+                        <button id="authTabLogin" onclick="setAuthMode('login')" style="flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border-radius: 8px; border: 1px dashed #eab308; background: #eab308; color: #0f172a; cursor: pointer; transition: 0.2s;">התחברות לשחקן קיים 🔑</button>
+                        <button id="authTabRegister" onclick="setAuthMode('register')" style="flex: 1; padding: 8px; font-size: 13px; font-weight: bold; border-radius: 8px; border: 1px dashed #475569; background: #1e293b; color: #9ca3af; cursor: pointer; transition: 0.2s;">הרשמה חדשה 📝</button>
+                    </div>
+
+                    <div class="mode-select-box">
+                        <label>כיוון למידה / Direction:</label>
+                        <select id="langMode" onchange="onLangModeChange()">
+                            <option value="en-he">English ⮕ עברית (תרגול אנגלית)</option>
+                            <option value="he-en" selected>עברית ⮕ English (תרגול עברית)</option>
+                        </select>
+                    </div>
+
+                    <!-- פנל ניהול רשימות -->
+                    <div class="list-manager-box" style="margin-bottom: 15px; text-align: right; direction: rtl; border: 2px solid #475569; padding: 15px; border-radius: 12px; background: rgba(15, 23, 42, 0.6); box-sizing: border-box;">
+                        <label style="color: #facc15; font-weight: bold; font-size: 14px; display: block; margin-bottom: 8px;">שמירה וטעינה של רשימות מילים 💾</label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <select id="savedListsDropdown" onchange="loadSelectedList()" style="flex-grow: 1; background: #111827; color: white; border: 2px solid #475569; padding: 8px; border-radius: 8px; font-weight: bold; outline: none; font-size: 14px; height: 38px;">
+                                <option value="">-- טוען רשימות מילים... --</option>
+                            </select>
+                            <button class="btn-dark-metal" id="deleteListBtn" onclick="deleteCurrentList()" style="padding: 0 12px; font-size: 13px; display: none; height: 38px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; border: 2px solid #991b1b; background: linear-gradient(180deg, #ef4444, #b91c1c); line-height: 34px;">מחק 🗑️</button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="newListNameInput" placeholder="שם לשמירת רשימה נוכחית..." style="flex-grow: 1; background: #111827; color: white; border: 2px solid #475569; padding: 8px; border-radius: 8px; font-weight: bold; outline: none; text-align: right; font-size: 14px; height: 38px; box-sizing: border-box;">
+                            <button class="btn-green" onclick="saveCurrentList()" style="padding: 0 16px; font-size: 13px; font-weight: bold; height: 38px; border-radius: 8px; cursor: pointer; color: white; border: 2px solid #166534; background: linear-gradient(180deg, #22c55e, #15803d); line-height: 34px;">שמור 💾</button>
+                        </div>
+                    </div>
+
+                    <!-- שטח הקלדת המילים -->
+                    <textarea id="wordInput" placeholder="הקלד טקסט לתרגום... (למשל: Apple=תפוח)">תפוח=Apple&#10;ניצחון=Victory&#10;טנק=Tank&#10;מגן=Shield&#10;לוחם=Warrior</textarea>
+                    
+                    <div id="status">התחברות לענן בעיצומה...</div>
+                    
+                    <!-- שורת בקרת תרגום -->
+                    <div class="control-row">
+                        <button class="btn-green" id="startGameBtn" onclick="processAndStart()">התחל משחק 🎮</button>
+                        <button class="btn-gold" id="translateBtn" onclick="autoTranslateTanks()">תרגם ✍️</button>
+                        <button class="btn-dark-metal" id="swapLangBtn" onclick="toggleLanguageDirection()">החלף כיוון תרגום 🔄</button>
+                        
+                        <div class="language-status-display" id="langBadge">
+                            <span>עברית <span style="color:#a1a1aa;">&gt;</span> אנגלית</span>
+                            <img src="https://flagcdn.com/w20/il.png" alt="IL" id="langFlag">
+                        </div>
+                    </div>
+
+                    <!-- שורה תחתונה: ווליום, פרופיל והדרכה -->
+                    <div class="bottom-bar">
+                        <div class="volume-box">
+                            <span>🔊</span>
+                            <input type="range" min="0" max="100" value="80" id="volumeSlider" oninput="updateVolume(this.value)">
+                        </div>
+                        
+                        <div class="credentials-container">
+                            <div class="player-input-box">
+                                <span>👤</span>
+                                <input type="text" id="playerName" value="טנקיסט_1" placeholder="שם משתמש..." oninput="onCredentialsChange()">
+                            </div>
+                            <div class="player-input-box">
+                                <span>🔑</span>
+                                <input type="password" id="playerPassword" value="1234" placeholder="סיסמה..." oninput="onCredentialsChange()">
+                            </div>
+                        </div>
+
+                        <div>
+                            <button class="btn-dark-metal" style="padding: 8px 18px; font-size: 14px;" onclick="showHelp()">הדרכה 📖</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- לחצני פעולה בפינות -->
+                <div class="corner-actions left">
+                    <button class="round-action-btn" onclick="showHelp()">
+                        <span class="icon">⚙️</span>
+                        <span>הוראות</span>
+                    </button>
+                </div>
+                <div class="corner-actions right">
+                    <button class="round-action-btn" onclick="openShop()">
+                        <span class="icon">🛒</span>
+                        <span>חנות</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- חנות המשחק הפעילה המשודרגת -->
+        <div id="shop-modal">
+            <div class="shop-header">
+                <div class="shop-title">
+                    <span>⚔️ חנות חזית הפלדה ⚔️</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="shop-coins-badge">
+                        <span id="shopCoins">0</span> 🪙
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-tabs">
+                <div class="shop-tab active" id="tab-upgrades" onclick="switchShopTab('upgrades')">⚙️ שדרוגים</div>
+                <div class="shop-tab" id="tab-skins" onclick="switchShopTab('skins')">🎨 צבעים וטקסטורות</div>
+                <div class="shop-tab" id="tab-hulls" onclick="switchShopTab('hulls')">🚜 גוף הטנק (Hull)</div>
+                <div class="shop-tab" id="tab-turrets" onclick="switchShopTab('turrets')">🔫 קנה וצריח (Turret)</div>
+                <div class="shop-tab" id="tab-minions" onclick="switchShopTab('minions')">👾 מלווים ועוזרים</div>
+            </div>
+
+            <!-- תוכן לשונית שדרוגים -->
+            <div class="shop-content" id="shop-upgrades-list">
+                <div class="shop-item-card">
+                    <div class="shop-item-info">
+                        <div class="shop-item-title">🛡️ שריון מולחם (Armor)</div>
+                        <div class="shop-item-desc">מוסיף לב חיים מקסימלי נוסף לכל רמה (עד 8 לבבות).</div>
+                        <div class="upgrade-progress-dots" id="progress-armor">
+                            <div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+                        </div>
+                    </div>
+                    <button class="shop-buy-btn" id="btn-upgrade-armor" onclick="buyUpgrade('armor')">300 🪙</button>
+                </div>
+
+                <div class="shop-item-card">
+                    <div class="shop-item-info">
+                        <div class="shop-item-title">🚀 מנוע טורבו (Engine Speed)</div>
+                        <div class="shop-item-desc">משפר את מהירות התנועה והתמרון של הטנק שלך.</div>
+                        <div class="upgrade-progress-dots" id="progress-engine">
+                            <div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+                        </div>
+                    </div>
+                    <button class="shop-buy-btn" id="btn-upgrade-engine" onclick="buyUpgrade('engine')">300 🪙</button>
+                </div>
+
+                <div class="shop-item-card">
+                    <div class="shop-item-info">
+                        <div class="shop-item-title">⚡ קצב ירי (Reload Speed)</div>
+                        <div class="shop-item-desc">מצמצם את זמן ההמתנה בין ירייה לירייה למתקפה רציפה.</div>
+                        <div class="upgrade-progress-dots" id="progress-turret">
+                            <div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+                        </div>
+                    </div>
+                    <button class="shop-buy-btn" id="btn-upgrade-turret" onclick="buyUpgrade('turret')">300 🪙</button>
+                </div>
+            </div>
+
+            <!-- תוכן לשונית צבעים וטקסטורות -->
+            <div class="shop-content" id="shop-skins-list" style="display: none;">
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #3b82f6;">🔵 צבע פלדה כחול</div><div class="shop-item-desc">צבע הברזל הכחול המקורי.</div></div><button class="shop-buy-btn selected" id="btn-skin-classic" onclick="buyOrSelectSkin('classic', 0)">בשימוש</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #22c55e;">🟢 צבע ירוק יער</div><div class="shop-item-desc">עיצוב הסוואה מיוחד לקרבות סבך ויערות.</div></div><button class="shop-buy-btn" id="btn-skin-forest" onclick="buyOrSelectSkin('forest', 400)">400 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #facc15;">🟡 צבע זהב מדברי</div><div class="shop-item-desc">שריון מוזהב ונוצץ המגן על מפקדים בכירים.</div></div><button class="shop-buy-btn" id="btn-skin-gold" onclick="buyOrSelectSkin('gold', 800)">800 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #a855f7;">🟣 צבע סגול סייבר</div><div class="shop-item-desc">טנק בצבע מיוחד ללוחמי קומנדו טכנולוגי מתקדם.</div></div><button class="shop-buy-btn" id="btn-skin-purple" onclick="buyOrSelectSkin('purple', 1000)">1000 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">🌈 קשת בענן דינמית</div><div class="shop-item-desc">צבע קשת מהפנט שמשתנה ורוטט בזמן אמת!</div></div><button class="shop-buy-btn" id="btn-skin-rainbow" onclick="buyOrSelectSkin('rainbow', 1500)">1500 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #f97316; font-weight: bold; text-shadow: 0 0 5px #f97316;">🔥 לבה רוטטת (Lava)</div><div class="shop-item-desc">טקסטורת אש רוטטת ובוערת.</div></div><button class="shop-buy-btn" id="btn-skin-lava" onclick="buyOrSelectSkin('lava', 1800)">1800 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="background: linear-gradient(90deg, #10b981, #047857); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">📟 מטריקס דיגיטלי</div><div class="shop-item-desc">אפקט קוד ירוק זורם בסגנון מטריקס חצי שקוף.</div></div><button class="shop-buy-btn" id="btn-skin-matrix" onclick="buyOrSelectSkin('matrix', 900)">900 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="background: linear-gradient(90deg, #f97316, #1e293b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">🐅 נמר מלכותי (Tiger)</div><div class="shop-item-desc">שילוב פסים מרהיב של כתום ושחור פראי.</div></div><button class="shop-buy-btn" id="btn-skin-tiger" onclick="buyOrSelectSkin('tiger', 1200)">1200 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="background: linear-gradient(90deg, #6366f1, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">🌌 ערפילית הגלקסיה (Nebula)</div><div class="shop-item-desc">אנימציה קוסמית מהפנטת בצבעי סגול ואינדיגו.</div></div><button class="shop-buy-btn" id="btn-skin-galaxy" onclick="buyOrSelectSkin('galaxy', 2000)">2000 🪙</button></div>
+            </div>
+
+            <!-- תוכן לשונית דגמי גוף הטנק (Hulls / Chassis) -->
+            <div class="shop-content" id="shop-hulls-list" style="display: none;">
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #60a5fa;">🚜 גוף פלדה קלאסי (Classic Abrams)</div><div class="shop-item-desc">שלדה מלבנית מציאותית עם מסילות זחל חשופות.</div></div><button class="shop-buy-btn selected" id="btn-hull-classic" onclick="buyOrSelectHull('classic', 0)">בשימוש</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #38bdf8;">🚜 גוף וואספ קליל (Wasp Style)</div><div class="shop-item-desc">שלדה ספורטיבית קומפקטית המצוידת במנועי סילון קטנים וזוהרים.</div></div><button class="shop-buy-btn" id="btn-hull-wasp" onclick="buyOrSelectHull('wasp', 1000)">1000 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #10b981;">🚜 גוף האנטר ממוגן (Hunter Style)</div><div class="shop-item-desc">שלדה בעיצוב זוויתי, מגיני זחלים ופנסי סריקה טקטיים.</div></div><button class="shop-buy-btn" id="btn-hull-hunter" onclick="buyOrSelectHull('hunter', 1500)">1500 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #ef4444;">🚜 גוף מאמות' כבד (Mammoth Goliath)</div><div class="shop-item-desc">שלדת ענק מאסיבית, זחלים כפולים ומגן פגיעה עבה.</div></div><button class="shop-buy-btn" id="btn-hull-mammoth" onclick="buyOrSelectHull('mammoth', 2500)">2500 🪙</button></div>
+            </div>
+
+            <!-- תוכן לשונית דגמי קנה וצריח (Turrets) -->
+            <div class="shop-content" id="shop-turrets-list" style="display: none;">
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #60a5fa;">🔫 תותח קלאסי (Standard Gun)</div><div class="shop-item-desc">צריח משוריין עגול, קנה קלאסי ומפלט גזים.</div></div><button class="shop-buy-btn selected" id="btn-turret-classic" onclick="buyOrSelectTurret('classic', 0)">בשימוש</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #06b6d4;">🔫 רובה מסילה (Railgun)</div><div class="shop-item-desc">צריח יהלומי, מאיץ חלקיקים המוקף בטבעות פלזמה.</div></div><button class="shop-buy-btn" id="btn-turret-railgun" onclick="buyOrSelectTurret('railgun', 1200)">1200 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #ec4899;">🔫 תותח פלזמה כפול (Twins)</div><div class="shop-item-desc">צריח רחב המצויד בקנה כפול ויורה פגזי פלזמה זוהרים.</div></div><button class="shop-buy-btn" id="btn-turret-twins" onclick="buyOrSelectTurret('twins', 1800)">1800 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #f97316;">🔫 תותח רועם (Thunder Siege)</div><div class="shop-item-desc">תותח מלחמה קצר, עבה וכבד בעל בלם לוע משוריין.</div></div><button class="shop-buy-btn" id="btn-turret-thunder" onclick="buyOrSelectTurret('thunder', 2200)">2200 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #94a3b8;">🔫 תותח צלפים (Shaft laser)</div><div class="shop-item-desc">צריח מלבני כבד ושרוול תרמי לצמצום חתימת חום.</div></div><button class="shop-buy-btn" id="btn-turret-shaft" onclick="buyOrSelectTurret('shaft', 2000)">2000 🪙</button></div>
+            </div>
+
+            <!-- תוכן לשונית מלווים ועוזרים -->
+            <div class="shop-content" id="shop-minions-list" style="display: none;">
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #f472b6;">👾 פינקי היורה (Pinky helper)</div><div class="shop-item-desc">מפלצונת קטנה שמרחפת ויורה אוטומטית פגזי פלזמה על האויב הנכון!</div></div><button class="shop-buy-btn" id="btn-minion-pinky" onclick="buyOrSelectMinion('pinky', 1500)">1500 🪙</button></div>
+                <div class="shop-item-card"><div class="shop-item-info"><div class="shop-item-title" style="color: #38bdf8;">🌀 מגנטו המושך (Magneto helper)</div><div class="shop-item-desc">מלווה המושך ושואב אליך קופסאות ריפוי ובונוסים ממרחק עצום!</div></div><button class="shop-buy-btn" id="btn-minion-magneto" onclick="buyOrSelectMinion('magneto', 2000)">2000 🪙</button></div>
+            </div>
+
+            <button class="shop-close-btn" onclick="closeShop()">חזרה 🏠</button>
+        </div>
+
+        <!-- מסך הפסד -->
+        <div id="overlay">
+            <h1 style="color:#ef4444; margin-bottom: 20px;">MISSION FAILED</h1>
+            <p style="font-size: 28px; margin-bottom: 30px;">הציון הסופי שלך: <span id="finalScore" style="color:#38bdf8; font-weight:bold;">0</span></p>
+            <button class="btn-green" onclick="processAndStart()">שחק שוב 🔄</button>
+            <button class="btn-dark-metal" style="margin-top: 15px;" onclick="returnToMenuTanks()">חזרה לתפריט 🏠</button>
+        </div>
+
+        <!-- מסך השהיה מובנה -->
+        <div id="pause-screen">
+            <h1 style="color:#3b82f6; margin-bottom: 20px;">המשחק מושהה ⏸️</h1>
+            <p style="font-size: 24px; margin-bottom: 30px; color: #cbd5e1;">הטנקים עצרו מלכת.<br>בחר את הצעד הבא שלך:</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-green" style="width: auto; padding: 12px 25px;" onclick="togglePause()">המשך משחק 🎮</button>
+                <button class="btn-red" style="background: #ef4444; border:none; border-radius: 8px; width: auto; padding: 12px 25px; color:white; font-weight:bold;" onclick="restartGameFromPause()">הפעל מחדש 🔄</button>
+                <button class="btn-dark-metal" style="border-radius: 10px; padding: 12px 25px; font-weight: bold;" onclick="returnToMenuTanks()">חזרה לתפריט 🏠</button>
+            </div>
+        </div>
+
+        <!-- חלונית התראה טקטית -->
+        <div id="custom-alert">
+            <h2 id="alert-title">התראה טקטית</h2>
+            <p id="alert-message">תוכן ההודעה...</p>
+            <button class="alert-btn" onclick="closeCustomAlert()">אישור 🛡️</button>
+        </div>
+
+        <canvas id="g"></canvas>
+    </div>
+
+
+    <!-- ==========================================
+         PACMAN GAME CONTAINER (Unchanged)
+    =========================================== -->
+    <div id="pacman-app">
+        <button class="hub-btn-back" onclick="returnToHub()">חזרה לתפריט 🏠</button>
+
+        <div id="bonus-msg">+❤️ BONUS!</div>
+        <div id="toast-notification" class="toast"></div>
+
+        <div id="setup-screen">
+            <h1 style="color: #ffb8ff; text-shadow: 2px 2px #4444ff; font-size: 32px; margin-bottom: 5px;">Ms. Pac-Man English</h1>
+            <p style="color: #00ffff; margin-bottom: 15px; font-size: 16px; font-weight: bold;">הדבק רשימת מילים באנגלית, תרגם אותן בלחיצה אחת ושחק!</p>
+            
+            <label class="voice-settings">
+                <input type="checkbox" id="voice-toggle" checked>
+                <span>הקראה קולית באנגלית (Voice)</span>
+            </label>
+
+            <div class="bulk-translation-area">
+                <h3 style="margin: 0; color: #ffb8ff; text-align: right; font-size: 18px;">✨ הזנת רשימה לתרגום מהיר</h3>
+                <textarea id="bulk-words-input" class="bulk-textarea" placeholder="לדוגמה:&#10;Apple&#10;Tomorrow&#10;Language"></textarea>
+                <button class="btn-action" style="background: #0f1c30; border-color: #00ffff;" id="btn-translate-list" onclick="runBulkTranslation()">
+                    <span>תרגם והוסף אוטומטית 🪄</span>
+                </button>
+                <div class="translation-loader" id="loader-text">מתרגם... ⏳</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <button class="btn-action" style="padding: 4px 10px; font-size: 13px; border-color: #ff4444; color: #ff4444; background: transparent;" onclick="clearAllWords()">פנה הכל 🗑️</button>
+                <h3 style="margin: 0; color: #ffb8ff; font-size: 16px;">מילים למשחק (<span id="words-count">0</span>)</h3>
+            </div>
+            
+            <div class="words-table-container">
+                <table class="words-table">
+                    <thead><tr><th style="direction: ltr; text-align: left;">English</th><th>עברית</th><th style="width: 50px; text-align: center;">מחק</th></tr></thead>
+                    <tbody id="words-list-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn-reset" onclick="resetToDefault()">אפס לברירת מחדל</button>
+                <button class="btn-play" id="btn-start-game" onclick="startGameWithCustomWords()">🎮 שחק עכשיו!</button>
+            </div>
+        </div>
+
+        <div id="game-container">
+            <div id="game-modal">
+                <div id="modal-title">מעולה!</div>
+                <button id="next-lvl-btn" class="modal-btn primary" onclick="startGameWithCustomWords()">שחק שוב</button>
+                <button class="modal-btn" onclick="goToMenu()">חזור לעריכת מילים</button>
+            </div>
+
+            <div class="ui">
+                <div class="word-to-find" id="target-word">---</div>
+                <div class="stats-row">
+                    <div>🎯 הצלחות: <span id="success-count">0</span>/<span id="target-count">15</span></div>
+                    <div id="lives-display">❤️❤️❤️</div>
+                </div>
+            </div>
+            <canvas id="pac-game" width="380" height="260"></canvas>
+            
+            <div id="mobile-controls">
+                <div class="dpad-btn dpad-up" onclick="setPlayerDirection(3)">▲</div>
+                <div class="dpad-btn dpad-left" onclick="setPlayerDirection(2)">◀</div>
+                <div class="dpad-btn dpad-right" onclick="setPlayerDirection(0)">▶</div>
+                <div class="dpad-btn dpad-down" onclick="setPlayerDirection(1)">▼</div>
+            </div>
+            <button class="btn-back" onclick="goToMenu()">חזור לעריכה (Esc)</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         GLOBAL HUB SCRIPTS
+    =========================================== -->
+    <script>
+        window.activeGame = null;
+
+        window.openGame = function(gameName) {
+            document.getElementById('main-hub').style.display = 'none';
+            window.activeGame = gameName;
+
+            if (gameName === 'tanks') {
+                document.getElementById('tanks-app').style.display = 'flex';
+                if (window.resizeGameTanks) window.resizeGameTanks();
+            } else if (gameName === 'pacman') {
+                document.getElementById('pacman-app').style.display = 'flex';
+            }
+        };
+
+        window.returnToHub = function() {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            
+            // Stop/Pause Games
+            if (window.activeGame === 'tanks' && window.returnToMenuTanks) {
+                window.returnToMenuTanks();
+            }
+            if (window.activeGame === 'pacman' && window.goToMenu) {
+                window.goToMenu();
+            }
+
+            window.activeGame = null;
+            document.getElementById('tanks-app').style.display = 'none';
+            document.getElementById('pacman-app').style.display = 'none';
+            document.getElementById('main-hub').style.display = 'flex';
+        };
+    </script>
+
+
+    <!-- ==========================================
+         PACMAN JS LOGIC
+    =========================================== -->
+    <script>
+        (() => {
+            const canvas = document.getElementById('pac-game');
+            const ctx = canvas.getContext('2d');
+            
+            const TILE = 20, PLAYER_SPEED = 2, GHOST_SPEED = 1.25;
+
+            const localDictFallback = {
+                "apple": "תפוח", "banana": "בננה", "cat": "חתול", "dog": "כלב", "school": "בית ספר",
+                "teacher": "מורה", "book": "ספר", "water": "מים", "bread": "לחם", "milk": "חלב",
+                "house": "בית", "family": "משפחה", "friend": "חבר", "sun": "שמש", "moon": "ירח"
+            };
+
+            const defaultVocab = [
+                {eng:"Always", heb:"תמיד"}, {eng:"Never", heb:"לעולם לא"}, 
+                {eng:"Example", heb:"דוגמה"}, {eng:"Important", heb:"חשוב"}, 
+                {eng:"Language", heb:"שפה"}, {eng:"Science", heb:"מדע"}, {eng:"Reason", heb:"סיבה"}
+            ];
+
+            let activeVocab = [];
+
+            const mapLayout = [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+                [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+                [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ];
+
+            let successes, targetSuccesses, lives, gameOver = true, frame, currentQuestion, combo;
+            let player = { x: 0, y: 0, dir: 0, nextDir: 0 };
+            let ghosts = [{ x: 0, y: 0, color: "red", p: "chase" }, { x: 0, y: 0, color: "pink", p: "ambush" }, { x: 0, y: 0, color: "cyan", p: "random" }];
+
+            function showToast(message) {
+                const toast = document.getElementById('toast-notification');
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3500);
+            }
+
+            function speak(t) {
+                if (!document.getElementById('voice-toggle').checked) return;
+                window.speechSynthesis.cancel();
+                let u = new SpeechSynthesisUtterance(t);
+                u.lang = 'en-US'; u.rate = 0.8;
+                window.speechSynthesis.speak(u);
+            }
+
+            async function translateWithGoogleTranslate(text) {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=he&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("API Error");
+                return await response.json();
+            }
+
+            window.runBulkTranslation = async function() {
+                const inputArea = document.getElementById('bulk-words-input');
+                const rawText = inputArea.value.trim();
+                const loader = document.getElementById('loader-text');
+                const translateBtn = document.getElementById('btn-translate-list');
+
+                if (!rawText) return showToast('אנא הקלד מילים תחילה!');
+                loader.style.display = 'block'; translateBtn.disabled = true;
+
+                const lines = rawText.split('\n');
+                const locallyParsed = [];
+                const englishOnlyLines = [];
+
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+                    const match = line.match(/^([A-Za-z\s\-\_]+)\s*[\-:=→\s]\s*([\u0590-\u05fe\s]+)$/) || line.match(/^([\u0590-\u05fe\s]+)\s*[\-:=→\s]\s*([A-Za-z\s\-\_]+)$/);
+                    if (match) {
+                        let eng = match[1].trim(), heb = match[2].trim();
+                        if (/^[A-Za-z\s]+$/.test(heb)) { const temp = eng; eng = heb; heb = temp; }
+                        eng = eng.charAt(0).toUpperCase() + eng.slice(1).toLowerCase();
+                        locallyParsed.push({ eng, heb });
+                    } else {
+                        const cleanEng = line.replace(/[^A-Za-z\s\-\_]/g, '').trim();
+                        if (cleanEng) englishOnlyLines.push(cleanEng);
+                    }
+                });
+
+                let countAdded = 0;
+                locallyParsed.forEach(p => {
+                    if (!activeVocab.some(w => w.eng.toLowerCase() === p.eng.toLowerCase())) { activeVocab.push(p); countAdded++; }
+                });
+
+                if (englishOnlyLines.length > 0) {
+                    try {
+                        const googleResponse = await translateWithGoogleTranslate(englishOnlyLines.join('\n'));
+                        if (googleResponse && googleResponse[0]) {
+                            googleResponse[0].forEach(part => {
+                                if (part && part[0] && part[1]) {
+                                    const translated = part[0].replace(/\n/g, '').trim();
+                                    const original = part[1].replace(/\n/g, '').trim();
+                                    if (original && translated) {
+                                        const formOrig = original.charAt(0).toUpperCase() + original.slice(1).toLowerCase();
+                                        if (!activeVocab.some(w => w.eng.toLowerCase() === formOrig.toLowerCase())) {
+                                            activeVocab.push({ eng: formOrig, heb: translated }); countAdded++;
+                                        }
+                                    }
+                                }
+                            });
+                            showToast(`תורגמו ונוספו ${countAdded} מילים! ✨`);
+                        }
+                    } catch (e) {
+                        englishOnlyLines.forEach(engWord => {
+                            const cleanKey = engWord.toLowerCase();
+                            if (!activeVocab.some(w => w.eng.toLowerCase() === cleanKey)) {
+                                activeVocab.push({ eng: engWord.charAt(0).toUpperCase() + engWord.slice(1).toLowerCase(), heb: localDictFallback[cleanKey] || "(דרוש תרגום)" });
+                            }
+                        });
+                        showToast(`שגיאה ברשת. השתמשנו במילון גיבוי מקומי.`);
+                    }
+                } else if (countAdded > 0) showToast(`נקלטו ${countAdded} מילים!`);
+
+                saveWords(); renderWordsTable(); inputArea.value = ''; 
+                loader.style.display = 'none'; translateBtn.disabled = false;
+            };
+
+            function loadWords() {
+                const stored = localStorage.getItem('pac_custom_vocab_direct');
+                activeVocab = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultVocab));
+                renderWordsTable();
+            }
+
+            function saveWords() { localStorage.setItem('pac_custom_vocab_direct', JSON.stringify(activeVocab)); }
+
+            function renderWordsTable() {
+                const tbody = document.getElementById('words-list-tbody'); tbody.innerHTML = '';
+                document.getElementById('words-count').innerText = activeVocab.length;
+                activeVocab.forEach((word, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td style="direction:ltr;text-align:left;">${word.eng}</td>
+                                    <td style="${word.heb === "(דרוש תרגום)" ? 'color:#ff4444;font-weight:bold;' : ''}">${word.heb}</td>
+                                    <td style="text-align:center;"><button class="delete-btn" onclick="deleteWord(${index})">🗑️</button></td>`;
+                    tbody.appendChild(tr);
+                });
+                document.getElementById('btn-start-game').disabled = activeVocab.length < 3;
+            }
+
+            window.deleteWord = function(idx) { activeVocab.splice(idx, 1); saveWords(); renderWordsTable(); };
+            window.clearAllWords = function() { activeVocab = []; saveWords(); renderWordsTable(); showToast('הרשימה פונתה!'); };
+            window.resetToDefault = function() { activeVocab = JSON.parse(JSON.stringify(defaultVocab)); saveWords(); renderWordsTable(); showToast('אופס להגדרות יצרן!'); };
+
+            window.startGameWithCustomWords = function() {
+                const playableWords = activeVocab.filter(w => w.heb && w.heb !== "(דרוש תרגום)");
+                if (playableWords.length < 3) return showToast('חובה לפחות 3 מילים עם תרגום תקין!');
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('game-container').style.display = 'flex';
+                document.getElementById('game-modal').style.display = 'none';
+                targetSuccesses = Math.min(15, playableWords.length);
+                document.getElementById('target-count').innerText = targetSuccesses;
+                successes = 0; lives = 3; gameOver = false; frame = 0; combo = 0;
+                resetPositions(); nextQuestion(); updateUI(); requestAnimationFrame(gameLoop);
+            };
+
+            function resetPositions() {
+                player.x = 9 * TILE; player.y = 11 * TILE; player.dir = 0; player.nextDir = 0;
+                ghosts.forEach((g, i) => { g.x = [1, 17, 9][i] * TILE; g.y = 1 * TILE; g.dir = 1; });
+            }
+
+            function nextQuestion() {
+                const playableWords = activeVocab.filter(w => w.heb && w.heb !== "(דרוש תרגום)");
+                currentQuestion = playableWords[Math.floor(Math.random() * playableWords.length)];
+                document.getElementById('target-word').innerText = currentQuestion.eng;
+                speak(currentQuestion.eng);
+                let opts = [currentQuestion.heb];
+                while(opts.length < 3) { let f = playableWords[Math.floor(Math.random() * playableWords.length)].heb; if(!opts.includes(f)) opts.push(f); }
+                opts.sort(() => Math.random() - 0.5);
+                ghosts.forEach((g, i) => g.word = opts[i]);
+            }
+
+            function updateUI() {
+                document.getElementById('success-count').innerText = successes;
+                document.getElementById('lives-display').innerText = "❤️".repeat(lives);
+            }
+
+            function showEndModal(win) {
+                gameOver = true;
+                const m = document.getElementById('game-modal'), t = document.getElementById('modal-title'), n = document.getElementById('next-lvl-btn');
+                m.style.display = 'block';
+                if(win) { t.innerText = "ניצחתם!"; t.style.color = "#ffb8ff"; n.style.display = "block"; } 
+                else { t.innerText = "נגמרו החיים"; t.style.color = "#ff4444"; n.style.display = "none"; }
+            }
+
+            function canMove(x, y, d, s) {
+                let nx = x, ny = y;
+                if(d===0) nx+=s; if(d===1) ny+=s; if(d===2) nx-=s; if(d===3) ny-=s;
+                let c = Math.floor((nx+(d===0?TILE-1:0))/TILE), r = Math.floor((ny+(d===1?TILE-1:0))/TILE);
+                if(d===2) c = Math.floor(nx/TILE); if(d===3) r = Math.floor(ny/TILE);
+                return mapLayout[r] && mapLayout[r][c] !== 1;
+            }
+
+            window.setPlayerDirection = function(dir) { player.nextDir = dir; };
+
+            function gameLoop() {
+                if (gameOver || window.activeGame !== 'pacman') return;
+                frame++; ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                mapLayout.forEach((r, ri) => r.forEach((c, ci) => { 
+                    if(c===1) { ctx.strokeStyle="#4444ff"; ctx.lineWidth = 2; ctx.strokeRect(ci*TILE+4, ri*TILE+4, TILE-8, TILE-8); }
+                }));
+
+                if(player.x % TILE === 0 && player.y % TILE === 0) if(canMove(player.x, player.y, player.nextDir, PLAYER_SPEED)) player.dir = player.nextDir;
+                if(canMove(player.x, player.y, player.dir, PLAYER_SPEED)) { 
+                    if(player.dir===0) player.x+=PLAYER_SPEED; if(player.dir===1) player.y+=PLAYER_SPEED; 
+                    if(player.dir===2) player.x-=PLAYER_SPEED; if(player.dir===3) player.y-=PLAYER_SPEED; 
+                }
+                
+                ctx.save(); ctx.translate(player.x+TILE/2, player.y+TILE/2); ctx.rotate([0, Math.PI/2, Math.PI, -Math.PI/2][player.dir]); 
+                ctx.fillStyle = "yellow"; let m = Math.sin(frame*0.2)*0.5+0.5; ctx.beginPath(); ctx.arc(0,0,TILE/2-2,m,2*Math.PI-m); ctx.lineTo(0,0); ctx.fill(); ctx.restore();
+
+                ghosts.forEach(g => {
+                    if(Math.abs(g.x % TILE) < GHOST_SPEED && Math.abs(g.y % TILE) < GHOST_SPEED) {
+                        g.x = Math.round(g.x/TILE)*TILE; g.y = Math.round(g.y/TILE)*TILE;
+                        let dirs = [0,1,2,3].filter(d => canMove(g.x, g.y, d, GHOST_SPEED));
+                        let tx = player.x, ty = player.y;
+                        if(g.p === "ambush") { if(player.dir===0) tx+=3*TILE; else if(player.dir===1) ty+=3*TILE; }
+                        dirs.sort((a,b) => Math.hypot((g.x+(a===0?TILE:a===2?-TILE:0))-tx, (g.y+(a===1?TILE:a===3?-TILE:0))-ty) - Math.hypot((g.x+(b===0?TILE:b===2?-TILE:0))-tx, (g.y+(b===1?TILE:b===3?-TILE:0))-ty));
+                        g.dir = (g.p==="random" && Math.random()<0.3) ? dirs[Math.floor(Math.random()*dirs.length)] : dirs[0];
+                    }
+                    if(canMove(g.x, g.y, g.dir, GHOST_SPEED)) { 
+                        if(g.dir===0) g.x+=GHOST_SPEED; if(g.dir===1) g.y+=GHOST_SPEED; 
+                        if(g.dir===2) g.x-=GHOST_SPEED; if(g.dir===3) g.y-=GHOST_SPEED; 
+                    }
+                    
+                    ctx.fillStyle = g.color; ctx.beginPath(); ctx.arc(g.x+TILE/2, g.y+TILE/2, TILE/2-2, Math.PI, 0); ctx.lineTo(g.x+TILE-2, g.y+TILE); ctx.lineTo(g.x+2, g.y+TILE); ctx.fill();
+                    ctx.fillStyle="white"; ctx.font="bold 14px Arial"; ctx.textAlign="center"; ctx.fillText(g.word, g.x+TILE/2, g.y-5);
+
+                    if(Math.hypot(player.x - g.x, player.y - g.y) < 15) {
+                        if(g.word === currentQuestion.heb) {
+                            successes++; combo++; 
+                            if(combo>=3 && lives<5) { lives++; combo=0; document.getElementById('bonus-msg').style.display='block'; setTimeout(()=>document.getElementById('bonus-msg').style.display='none', 1000); }
+                            if(successes >= targetSuccesses) showEndModal(true); else { resetPositions(); nextQuestion(); updateUI(); }
+                        } else {
+                            lives--; combo=0; updateUI(); 
+                            if(lives<=0) showEndModal(false); else resetPositions();
+                        }
+                    }
+                });
+                
+                if(!gameOver) requestAnimationFrame(gameLoop);
+            }
+
+            window.goToMenu = function() { 
+                gameOver = true; 
+                window.speechSynthesis.cancel();
+                document.getElementById('game-container').style.display = 'none'; 
+                document.getElementById('setup-screen').style.display = 'flex';
+                loadWords();
+            };
+
+            window.addEventListener('keydown', e => { 
+                if (window.activeGame !== 'pacman') return;
+                if(e.key.includes("Right")) setPlayerDirection(0); 
+                if(e.key.includes("Down")) setPlayerDirection(1); 
+                if(e.key.includes("Left")) setPlayerDirection(2); 
+                if(e.key.includes("Up")) setPlayerDirection(3); 
+                if(e.key === "Escape" && document.getElementById('game-container').style.display === 'flex') goToMenu();
+            });
+
+            loadWords();
+        })();
+    </script>
+
+
+    <!-- ==========================================
+         TANKS JS LOGIC (FULL ORIGINAL RESTORED)
+    =========================================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let firebaseConfig;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "mock-api-key", authDomain: "mock-auth-domain.firebaseapp.com",
+                projectId: "mock-project-id", storageBucket: "mock-storage-bucket.appspot.com",
+                messagingSenderId: "1234567890", appId: "mock-app-id"
+            };
+        } catch (e) {
+            firebaseConfig = {
+                apiKey: "mock-api-key", authDomain: "mock-auth-domain.firebaseapp.com",
+                projectId: "mock-project-id", storageBucket: "mock-storage-bucket.appspot.com",
+                messagingSenderId: "1234567890", appId: "mock-app-id"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        const canvas = document.getElementById("g");
+        const ctx = canvas.getContext("2d");
+        const audioBtn = document.getElementById("audioBtn");
+        canvas.width = 1000; canvas.height = 700;
+
+        let words = [], tank, enemies, bullets, enemyBullets, walls, score, current, alive, keys, gameRunning = false, gifts = [];
+        let treadMarks = []; 
+        let particles = []; 
+        let screenShake = 0; 
+        let lastShotTime = 0; 
+        let lastMinionShotTime = 0; 
+        let mode = "he-en"; 
+        let autoAudio = false; 
+        let gamePaused = false; 
+        let gameVolume = 0.8;
+        const TANK_RADIUS = 22;
+        let audioCtx = null;
+        
+        let userLists = {}; 
+        let unsubscribeLists = null; 
+        let unsubscribeState = null; 
+        let isUsingCloud = true; 
+        let currentUsername = "טנקיסט_1"; 
+        let gameFrame = 0; 
+        let credentialsTimer = null; 
+        let authMode = "login"; 
+
+        let dbState = {
+            coins: 0,
+            unlockedSkins: ["classic"], activeSkin: "classic",
+            unlockedHulls: ["classic"], activeHull: "classic",
+            unlockedTurrets: ["classic"], activeTurret: "classic",
+            unlockedMinions: [], activeMinion: "none",
+            upgrades: { armor: 0, engine: 0, turret: 0 }
+        };
+
+        window.activeUtterances = [];
+
+        function resizeGame() {
+            if (document.getElementById('tanks-app').style.display === 'none') return;
+            const wrapper = document.querySelector('#tanks-app .viewport-wrapper');
+            const gameCanvas = document.getElementById('g');
+            const uiElement = document.getElementById('ui');
+            const baseWidth = 1000;
+            const baseHeight = 700;
+            const wWidth = window.innerWidth;
+            const wHeight = window.innerHeight;
+            
+            const uiHeight = gameRunning ? (uiElement ? uiElement.offsetHeight : 70) : 0;
+            const availableHeight = wHeight - uiHeight;
+            
+            let scale = Math.min(wWidth / baseWidth, availableHeight / baseHeight);
+            if (isNaN(scale) || scale <= 0) scale = 1;
+            
+            if (wrapper && gameRunning === false) {
+                wrapper.style.transform = `scale(${scale})`; wrapper.style.position = 'absolute';
+                wrapper.style.left = '50%'; wrapper.style.top = '50%';
+                wrapper.style.marginLeft = `-${baseWidth / 2}px`; wrapper.style.marginTop = `-${baseHeight / 2}px`;
+            }
+            
+            if (gameCanvas) {
+                gameCanvas.style.width = `${baseWidth * scale}px`; gameCanvas.style.height = `${baseHeight * scale}px`;
+                if (gameRunning) {
+                    gameCanvas.style.position = 'absolute'; gameCanvas.style.top = `${uiHeight + (availableHeight - baseHeight * scale) / 2}px`; gameCanvas.style.left = `${(wWidth - baseWidth * scale) / 2}px`;
+                } else {
+                    gameCanvas.style.position = 'static'; gameCanvas.style.top = ''; gameCanvas.style.left = '';
+                }
+            }
+        }
+        window.resizeGameTanks = resizeGame;
+        window.addEventListener('resize', resizeGame);
+        window.addEventListener('load', resizeGame);
+
+        function switchToLocalMode(reason) {
+            if (!isUsingCloud) return; 
+            isUsingCloud = false;
+            document.getElementById("status").style.color = "#38bdf8";
+            document.getElementById("status").innerText = "מצב מקומי פעיל 💻";
+            loadLocalLists();
+            loadLocalPlayerState(currentUsername);
+        }
+
+        let authTimeout = setTimeout(() => {
+            if (!auth.currentUser || !isUsingCloud) {
+                switchToLocalMode("חיבור לענן התעכב");
+            }
+        }, 3000);
+
+        function unlockBrowserAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+
+        function playBeep(freq, duration, type = "sine") {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1 * gameVolume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function showCustomAlert(title, msg) {
+            document.getElementById("alert-title").innerText = title;
+            document.getElementById("alert-message").innerText = msg;
+            document.getElementById("custom-alert").style.display = "block";
+            playBeep(440, 0.15);
+        }
+        function closeCustomAlert() {
+            document.getElementById("custom-alert").style.display = "none";
+            playBeep(330, 0.1);
+        }
+        window.closeCustomAlert = closeCustomAlert;
+
+        function showCredits() {
+            showCustomAlert("🎖️ קרדיטים", "קרב טנקים: חזית הפלדה\n\nפותח באהבה ובדיוק צבאי על ידי צוות חזית הפלדה התשפ\"ו.\nכל הזכויות שמורות!");
+        }
+        window.showCredits = showCredits;
+
+        function updateVolume(val) { gameVolume = val / 100; playBeep(520, 0.1); }
+
+        function toggleAutoAudio() {
+            unlockBrowserAudio(); 
+            autoAudio = !autoAudio;
+            const btn = document.getElementById("autoAudioBtn");
+            if (autoAudio) {
+                btn.classList.add("on"); btn.innerText = "שמע אוטומטי ✅"; if (gameRunning && current) speakWord();
+            } else {
+                btn.classList.remove("on"); btn.innerText = "שמע אוטומטי ❌"; if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+            playBeep(600, 0.1);
+        }
+
+        function togglePause() {
+            if (!gameRunning) return; 
+            unlockBrowserAudio();
+            gamePaused = !gamePaused;
+            const pauseScreen = document.getElementById("pause-screen");
+            const pauseBtn = document.getElementById("pauseBtn");
+            if (gamePaused) {
+                pauseScreen.style.display = "block"; pauseBtn.innerText = "המשך ▶️"; pauseBtn.style.background = "#22c55e"; 
+            } else {
+                pauseScreen.style.display = "none"; pauseBtn.innerText = "השהה ⏸️"; pauseBtn.style.background = "#3b82f6"; 
+            }
+            playBeep(500, 0.1);
+        }
+
+        function restartGameFromPause() {
+            gamePaused = false;
+            document.getElementById("pause-screen").style.display = "none";
+            document.getElementById("pauseBtn").innerText = "השהה ⏸️"; document.getElementById("pauseBtn").style.background = "#3b82f6";
+            resetGame(); playBeep(440, 0.1);
+        }
+
+        function returnToMenu() {
+            gameRunning = false; gamePaused = false;
+            document.getElementById("pause-screen").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("pauseBtn").style.display = "none";
+            document.getElementById("ui").style.display = "none";
+            document.getElementById("g").style.display = "none";
+            document.getElementById("start-screen").style.display = "flex";
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            resizeGame(); playBeep(300, 0.2, "sawtooth");
+        }
+
+        function onLangModeChange() {
+            mode = document.getElementById("langMode").value;
+            const input = document.getElementById("wordInput"), badge = document.getElementById("langBadge"), flag = document.getElementById("langFlag");
+            if (mode === "en-he") {
+                input.value = "Apple=תפוח\nVictory=ניצחון\nTank=טנק\nShield=מגן\nWarrior=לוחם";
+                badge.innerHTML = `<span>אנגלית <span style="color:#a1a1aa;">&gt;</span> עברית</span>`;
+                flag.src = "https://flagcdn.com/w20/us.png"; badge.appendChild(flag);
+            } else {
+                input.value = "תפוח=Apple\nניצחון=Victory\nטנק=Tank\nמגן=Shield\nלוחם=Warrior";
+                badge.innerHTML = `<span>עברית <span style="color:#a1a1aa;">&gt;</span> אנגלית</span>`;
+                flag.src = "https://flagcdn.com/w20/il.png"; badge.appendChild(flag);
+            }
+            playBeep(523.25, 0.1);
+        }
+
+        function toggleLanguageDirection() {
+            const langSelect = document.getElementById("langMode");
+            langSelect.value = (langSelect.value === "he-en") ? "en-he" : "he-en";
+            onLangModeChange();
+        }
+
+        function speakWord() {
+            if (!current) return;
+            const targetLang = (mode === "en-he") ? "en-US" : "he-IL";
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel(); 
+            const msg = new SpeechSynthesisUtterance(current.q);
+            msg.lang = targetLang; msg.rate = 0.85;
+            window.speechSynthesis.speak(msg);
+        }
+
+        audioBtn.addEventListener('click', () => { unlockBrowserAudio(); speakWord(); });
+
+        function showHelp() {
+            showCustomAlert("📖 הוראות והדרכה", "קרב טנקים: חזית הפלדה - הדרכה:\n\n1. פוצץ את טנקי האויב הנושאים את התרגום הנכון למילה שמופיעה למעלה.\n2. תנועה: מקשי החצים במקלדת (קדימה, אחורה, פניות ימינה ושמאלה).\n3. ירי: מקש רווח.\n4. אסוף קוביות '+' ירוקות לקבלת לב מלא ובונוס 20 נקודות ומטבעות פלדה!\n5. הימנע מפגיעה בטנקים שגויים (מוריד חצי לב!).\n6. השהייה: לחץ על 'השהה' ב-UI, או במקלדת על מקש P או Escape.");
+        }
+
+        async function autoTranslate() {
+            const input = document.getElementById("wordInput"), status = document.getElementById("status");
+            const raw = input.value.split('\n').filter(w => w.trim());
+            if (!raw.length) return;
+            status.innerText = "מתרגם מילים...";
+            let pair = mode === "en-he" ? "en|he" : "he|en";
+            try {
+                let lines = [];
+                for (let w of raw) {
+                    let text = w.split('=')[0].trim();
+                    const res = await fetch("https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=" + pair);
+                    const data = await res.json();
+                    lines.push(text + "=" + data.responseData.translatedText.trim());
+                }
+                input.value = lines.join('\n'); status.style.color = "#4ade80"; status.innerText = "התרגום הושלם בהצלחה!"; playBeep(880, 0.2); 
+            } catch(e) { status.style.color = "#f87171"; status.innerText = "שגיאה בסנכרון התרגום."; playBeep(220, 0.3, "sawtooth"); }
+        }
+
+        // --- רשימות מילים (Firestore / Local) ---
+        function updateListsDropdownUI() {
+            const dropdown = document.getElementById("savedListsDropdown");
+            const currentSelection = dropdown.value;
+            dropdown.innerHTML = '<option value="">-- בחר רשימה שמורה --</option>';
+            for (const id in userLists) {
+                const opt = document.createElement("option"); opt.value = id; opt.innerText = userLists[id].name; dropdown.appendChild(opt);
+            }
+            if (userLists[currentSelection]) { dropdown.value = currentSelection; document.getElementById("deleteListBtn").style.display = "inline-block"; } 
+            else { dropdown.value = ""; document.getElementById("deleteListBtn").style.display = "none"; }
+        }
+
+        function loadLocalLists() {
+            try {
+                const stored = localStorage.getItem(`tanks_word_lists_${appId}_${currentUsername}`);
+                userLists = stored ? JSON.parse(stored) : {}; updateListsDropdownUI();
+            } catch (e) { userLists = {}; updateListsDropdownUI(); }
+        }
+
+        function saveLocalListDirectly(listName, wordInputVal) {
+            try {
+                let existingId = null;
+                for (const id in userLists) if (userLists[id].name.toLowerCase() === listName.toLowerCase()) { existingId = id; break; }
+                const listId = existingId || 'local_' + Date.now();
+                userLists[listId] = { username: currentUsername, name: listName, words: wordInputVal, createdAt: Date.now() };
+                localStorage.setItem(`tanks_word_lists_${appId}_${currentUsername}`, JSON.stringify(userLists)); updateListsDropdownUI();
+                document.getElementById("status").style.color = "#4ade80"; document.getElementById("status").innerText = `הרשימה נשמרה מקומית! 💾`; playBeep(880, 0.15);
+            } catch (e) { document.getElementById("status").style.color = "#f87171"; document.getElementById("status").innerText = "שגיאה בשמירה מקומית של הרשימה."; }
+        }
+
+        function deleteLocalListDirectly(listId) {
+            try { delete userLists[listId]; localStorage.setItem(`tanks_word_lists_${appId}_${currentUsername}`, JSON.stringify(userLists)); updateListsDropdownUI();
+                document.getElementById("status").style.color = "#4ade80"; document.getElementById("status").innerText = `הרשימה נמחקה בהצלחה!`; playBeep(330, 0.2, "sawtooth");
+            } catch (e) {}
+        }
+
+        function loadUserLists() {
+            if (!auth.currentUser || !isUsingCloud) { loadLocalLists(); return; }
+            const listCol = collection(db, 'artifacts', appId, 'public', 'data', 'userWordLists');
+            if (unsubscribeLists) unsubscribeLists();
+            unsubscribeLists = onSnapshot(listCol, (snapshot) => {
+                userLists = {};
+                snapshot.forEach((doc) => { const data = doc.data(); if (data.username === currentUsername) userLists[doc.id] = data; });
+                updateListsDropdownUI(); document.getElementById("status").style.color = "#4ade80"; document.getElementById("status").innerText = "סונכרן בהצלחה! ☁️";
+            }, (error) => { switchToLocalMode("נכשלה טעינת רשימות מהענן"); });
+        }
+
+        async function saveCurrentList() {
+            unlockBrowserAudio();
+            const nameInput = document.getElementById("newListNameInput"), listName = nameInput.value.trim();
+            if (!listName) return showCustomAlert("התראה", "אנא הזן שם לרשימת המילים לשמירה.");
+            const wordInputVal = document.getElementById("wordInput").value.trim();
+            if (!wordInputVal) return showCustomAlert("התראה", "הרשימה ריקה! אנא הקלד מילים לפני שמירה.");
+
+            if (!isUsingCloud || !auth.currentUser?.uid) { saveLocalListDirectly(listName, wordInputVal); nameInput.value = ""; return; }
+            
+            document.getElementById("status").style.color = "#facc15"; document.getElementById("status").innerText = "שומר רשימה בענן...";
+            try {
+                let existingId = null;
+                for (const id in userLists) if (userLists[id].name.toLowerCase() === listName.toLowerCase() && userLists[id].username === currentUsername) { existingId = id; break; }
+                
+                if (existingId) {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'userWordLists', existingId);
+                    await updateDoc(docRef, { words: wordInputVal, updatedAt: Date.now() });
+                } else {
+                    const listCol = collection(db, 'artifacts', appId, 'public', 'data', 'userWordLists');
+                    await addDoc(listCol, { username: currentUsername, name: listName, words: wordInputVal, createdAt: Date.now() });
+                }
+                document.getElementById("status").innerText = `הרשימה נשמרה בענן! ☁️`; document.getElementById("status").style.color = "#4ade80"; nameInput.value = ""; playBeep(880, 0.15);
+            } catch (e) { switchToLocalMode("שגיאה בשמירה לענן"); saveLocalListDirectly(listName, wordInputVal); nameInput.value = ""; }
+        }
+
+        function loadSelectedList() {
+            const listId = document.getElementById("savedListsDropdown").value;
+            const deleteBtn = document.getElementById("deleteListBtn");
+            if (!listId) { deleteBtn.style.display = "none"; return; }
+            const selected = userLists[listId];
+            if (selected) {
+                document.getElementById("wordInput").value = selected.words; document.getElementById("newListNameInput").value = selected.name;
+                deleteBtn.style.display = "inline-block"; document.getElementById("status").style.color = "#38bdf8"; document.getElementById("status").innerText = `רשימה נטענה בהצלחה!`; playBeep(523.25, 0.1);
+            }
+        }
+
+        async function deleteCurrentList() {
+            unlockBrowserAudio();
+            const dropdown = document.getElementById("savedListsDropdown"), listId = dropdown.value;
+            if (!listId || !userLists[listId]) return;
+            const deleteBtn = document.getElementById("deleteListBtn");
+            if (deleteBtn.dataset.confirming === "true") {
+                if (!isUsingCloud || !auth.currentUser?.uid) {
+                    deleteLocalListDirectly(listId); dropdown.value = ""; document.getElementById("newListNameInput").value = "";
+                    deleteBtn.style.display = "none"; deleteBtn.dataset.confirming = "false"; deleteBtn.innerText = "מחק 🗑️"; return;
+                }
+                document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "מוחק רשימה מהענן...";
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'userWordLists', listId); await deleteDoc(docRef);
+                    document.getElementById("status").innerText = "הרשימה נמחקה מהענן!"; document.getElementById("status").style.color = "#4ade80";
+                    dropdown.value = ""; document.getElementById("newListNameInput").value = ""; deleteBtn.style.display = "none"; deleteBtn.dataset.confirming = "false"; deleteBtn.innerText = "מחק 🗑️"; playBeep(330, 0.2, "sawtooth");
+                } catch (e) { switchToLocalMode("בעיית הרשאות"); deleteLocalListDirectly(listId); dropdown.value = ""; document.getElementById("newListNameInput").value = ""; deleteBtn.style.display = "none"; deleteBtn.dataset.confirming = "false"; deleteBtn.innerText = "מחק 🗑️"; }
+            } else {
+                deleteBtn.dataset.confirming = "true"; deleteBtn.innerText = "בטוח? ⚠️"; document.getElementById("status").style.color = "#eab308"; document.getElementById("status").innerText = "לחץ שוב למחיקה."; playBeep(440, 0.1);
+                setTimeout(() => { deleteBtn.dataset.confirming = "false"; deleteBtn.innerText = "מחק 🗑️"; }, 3500);
+            }
+        }
+
+        // --- פרופיל שחקן, שמירה וחנות ---
+        function getDefaultState() {
+            return {
+                coins: 0, unlockedSkins: ["classic"], activeSkin: "classic",
+                unlockedHulls: ["classic"], activeHull: "classic",
+                unlockedTurrets: ["classic"], activeTurret: "classic",
+                unlockedMinions: [], activeMinion: "none",
+                upgrades: { armor: 0, engine: 0, turret: 0 }
+            };
+        }
+
+        function setAuthMode(mode) {
+            unlockBrowserAudio(); authMode = mode;
+            const tabLogin = document.getElementById("authTabLogin"), tabRegister = document.getElementById("authTabRegister"), startBtn = document.getElementById("startGameBtn");
+            if (mode === "register") {
+                tabRegister.style.background = "#eab308"; tabRegister.style.color = "#0f172a"; tabRegister.style.borderColor = "#eab308";
+                tabLogin.style.background = "#1e293b"; tabLogin.style.color = "#9ca3af"; tabLogin.style.borderColor = "#475569";
+                startBtn.innerText = "הרשם וצור משתמש 📝"; startBtn.className = "btn-green";
+                document.getElementById("status").style.color = "#38bdf8"; document.getElementById("status").innerText = "מצב הרשמה פעיל!";
+            } else {
+                tabLogin.style.background = "#eab308"; tabLogin.style.color = "#0f172a"; tabLogin.style.borderColor = "#eab308";
+                tabRegister.style.background = "#1e293b"; tabRegister.style.color = "#9ca3af"; tabRegister.style.borderColor = "#475569";
+                startBtn.innerText = "התחל משחק 🎮"; document.getElementById("status").style.color = "#cbd5e1"; document.getElementById("status").innerText = "הקלד שם משתמש וסיסמה להתחברות.";
+            }
+            playBeep(580, 0.1); onCredentialsChange(); 
+        }
+
+        async function savePlayerState() {
+            const enteredPassword = document.getElementById("playerPassword").value;
+            if (!isUsingCloud || !auth.currentUser?.uid) { saveLocalPlayerStateDirectly(); return; }
+            const stateDoc = doc(db, 'artifacts', appId, 'public', 'data', 'playerStates', currentUsername);
+            try {
+                const payload = {
+                    password: enteredPassword, coins: dbState.coins, unlockedSkins: dbState.unlockedSkins, activeSkin: dbState.activeSkin,
+                    unlockedHulls: dbState.unlockedHulls, activeHull: dbState.activeHull, unlockedTurrets: dbState.unlockedTurrets, activeTurret: dbState.activeTurret,
+                    unlockedMinions: dbState.unlockedMinions, activeMinion: dbState.activeMinion, upgrades: dbState.upgrades, updatedAt: Date.now()
+                };
+                await setDoc(stateDoc, payload);
+            } catch (e) { switchToLocalMode("שגיאה בסנכרון"); saveLocalPlayerStateDirectly(); }
+        }
+
+        function loadLocalPlayerState(playerName) {
+            try {
+                const storedRegistry = localStorage.getItem(`tanks_local_registry_${appId}`);
+                const registry = storedRegistry ? JSON.parse(storedRegistry) : {};
+                const enteredPassword = document.getElementById("playerPassword").value;
+                if (registry[playerName]) {
+                    const userRecord = registry[playerName];
+                    if (authMode === "login") {
+                        if (userRecord.password === enteredPassword) { dbState = userRecord.state; document.getElementById("status").style.color = "#4ade80"; document.getElementById("status").innerText = "התחברות מקומית הצליחה! ✔️"; enableActionButtons(true); } 
+                        else { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "סיסמה שגויה למשתמש מקומי זה! ❌"; enableActionButtons(false); }
+                    } else if (authMode === "register") { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "שם המשתמש כבר תפוס! ❌"; enableActionButtons(false); }
+                } else {
+                    if (authMode === "register") { dbState = getDefaultState(); document.getElementById("status").style.color = "#facc15"; document.getElementById("status").innerText = "שם משתמש פנוי! הרשם עכשיו."; enableActionButtons(true); } 
+                    else { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "שם משתמש לא קיים! 📝"; enableActionButtons(false); }
+                }
+            } catch (e) { dbState = getDefaultState(); enableActionButtons(true); }
+            updateShopUI(); updateTopCoinsUI();
+        }
+
+        function saveLocalPlayerStateDirectly() {
+            try {
+                const storedRegistry = localStorage.getItem(`tanks_local_registry_${appId}`);
+                const registry = storedRegistry ? JSON.parse(storedRegistry) : {};
+                const enteredPassword = document.getElementById("playerPassword").value;
+                registry[currentUsername] = { password: enteredPassword, state: dbState, updatedAt: Date.now() };
+                localStorage.setItem(`tanks_local_registry_${appId}`, JSON.stringify(registry));
+            } catch (e) {}
+            updateShopUI(); updateTopCoinsUI();
+        }
+
+        async function loadPlayerState(playerName) {
+            const enteredPassword = document.getElementById("playerPassword").value;
+            if (!auth.currentUser || !isUsingCloud) { loadLocalPlayerState(playerName); return; }
+            const stateDoc = doc(db, 'artifacts', appId, 'public', 'data', 'playerStates', playerName);
+            if (unsubscribeState) unsubscribeState();
+            document.getElementById("status").style.color = "#facc15"; document.getElementById("status").innerText = "מאמת נתונים...";
+            try {
+                const docSnap = await getDoc(stateDoc);
+                if (docSnap.exists()) {
+                    const cloudRecord = docSnap.data();
+                    if (cloudRecord.password === enteredPassword) {
+                        if (authMode === "login") {
+                            dbState = {
+                                coins: cloudRecord.coins !== undefined ? cloudRecord.coins : 0,
+                                unlockedSkins: cloudRecord.unlockedSkins || ["classic"], activeSkin: cloudRecord.activeSkin || "classic",
+                                unlockedHulls: cloudRecord.unlockedHulls || ["classic"], activeHull: cloudRecord.activeHull || "classic",
+                                unlockedTurrets: cloudRecord.unlockedTurrets || ["classic"], activeTurret: cloudRecord.activeTurret || "classic",
+                                unlockedMinions: cloudRecord.unlockedMinions || [], activeMinion: cloudRecord.activeMinion || "none",
+                                upgrades: cloudRecord.upgrades || { armor: 0, engine: 0, turret: 0 }
+                            };
+                            document.getElementById("status").style.color = "#4ade80"; document.getElementById("status").innerText = "חיבור אושר בהצלחה! ✔️"; enableActionButtons(true);
+                        } else { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "שם המשתמש תפוס בענן! ❌"; enableActionButtons(false); }
+                    } else { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "סיסמה שגויה! ❌"; enableActionButtons(false); }
+                } else {
+                    if (authMode === "register") { dbState = getDefaultState(); document.getElementById("status").style.color = "#facc15"; document.getElementById("status").innerText = "שם פנוי בענן! לחץ להרשמה."; enableActionButtons(true); } 
+                    else { document.getElementById("status").style.color = "#ef4444"; document.getElementById("status").innerText = "שם משתמש לא קיים! 📝"; enableActionButtons(false); }
+                }
+                updateShopUI(); updateTopCoinsUI();
+            } catch (error) { switchToLocalMode("נכשלה טעינת נתונים"); }
+        }
+
+        function enableActionButtons(enable) {
+            const startBtn = document.getElementById("startGameBtn"), translateBtn = document.getElementById("translateBtn"), swapBtn = document.getElementById("swapLangBtn");
+            if (startBtn) startBtn.disabled = !enable; if (translateBtn) translateBtn.disabled = !enable; if (swapBtn) swapBtn.disabled = !enable;
+            const opacity = enable ? "1" : "0.4";
+            if (startBtn) startBtn.style.opacity = opacity; if (translateBtn) translateBtn.style.opacity = opacity; if (swapBtn) swapBtn.style.opacity = opacity;
+        }
+
+        function onCredentialsChange() {
+            if (credentialsTimer) clearTimeout(credentialsTimer);
+            credentialsTimer = setTimeout(() => {
+                const nameInput = document.getElementById("playerName").value.trim() || "טנקיסט_1";
+                if (nameInput !== currentUsername) {
+                    const startBtn = document.getElementById("startGameBtn");
+                    if (startBtn && !startBtn.disabled) savePlayerState();
+                    currentUsername = nameInput;
+                }
+                loadPlayerState(nameInput); loadUserLists();
+            }, 500);
+        }
+
+        function updateTopCoinsUI() {
+            const coinsDisplay = document.getElementById("coinsDisplay");
+            if (coinsDisplay) coinsDisplay.innerText = dbState.coins;
+        }
+
+        function openShop() {
+            unlockBrowserAudio();
+            const startBtn = document.getElementById("startGameBtn");
+            if (startBtn && startBtn.disabled) return showCustomAlert("אבטחת פרופיל", "הגישה לחנות חסומה! אנא הזן סיסמה נכונה כדי לפתוח את פרופיל הטנקיסט שלך.");
+            document.getElementById("shop-modal").style.display = "block"; updateShopUI(); playBeep(523.25, 0.1);
+        }
+
+        function closeShop() { document.getElementById("shop-modal").style.display = "none"; savePlayerState(); playBeep(392, 0.1); }
+
+        function switchShopTab(tabName) {
+            const tabs = ["upgrades", "skins", "hulls", "turrets", "minions"];
+            tabs.forEach(t => { document.getElementById(`tab-${t}`).classList.remove("active"); document.getElementById(`shop-${t}-list`).style.display = "none"; });
+            document.getElementById(`tab-${tabName}`).classList.add("active"); document.getElementById(`shop-${tabName}-list`).style.display = "grid";
+            playBeep(440, 0.08);
+        }
+
+        async function buyUpgrade(type) {
+            unlockBrowserAudio();
+            const currentLevel = dbState.upgrades[type];
+            if (currentLevel >= 3) return showCustomAlert("חנות", "הגעת לרמה המקסימלית של שדרוג זה!");
+            const cost = 300;
+            if (dbState.coins < cost) { showCustomAlert("שגיאה", "אין לך מספיק מטבעות!"); playBeep(220, 0.2, "sawtooth"); return; }
+            dbState.coins -= cost; dbState.upgrades[type]++;
+            await savePlayerState(); playBeep(880, 0.15); updateShopUI();
+        }
+
+        async function buyOrSelectSkin(skinId, cost) {
+            unlockBrowserAudio();
+            const isUnlocked = dbState.unlockedSkins.includes(skinId);
+            if (isUnlocked) { dbState.activeSkin = skinId; await savePlayerState(); playBeep(659.25, 0.15); updateShopUI(); } 
+            else {
+                if (dbState.coins < cost) { showCustomAlert("שגיאה", "אין לך מספיק מטבעות!"); playBeep(220, 0.2, "sawtooth"); return; }
+                dbState.coins -= cost; dbState.unlockedSkins.push(skinId); dbState.activeSkin = skinId;
+                await savePlayerState(); playBeep(880, 0.2); updateShopUI();
+            }
+        }
+
+        async function buyOrSelectHull(hullId, cost) {
+            unlockBrowserAudio();
+            if (!dbState.unlockedHulls) { dbState.unlockedHulls = ["classic"]; dbState.activeHull = "classic"; }
+            const isUnlocked = dbState.unlockedHulls.includes(hullId);
+            if (isUnlocked) { dbState.activeHull = hullId; await savePlayerState(); playBeep(659.25, 0.15); updateShopUI(); } 
+            else {
+                if (dbState.coins < cost) { showCustomAlert("שגיאה", "אין לך מספיק מטבעות!"); playBeep(220, 0.2, "sawtooth"); return; }
+                dbState.coins -= cost; dbState.unlockedHulls.push(hullId); dbState.activeHull = hullId;
+                await savePlayerState(); playBeep(880, 0.2); updateShopUI();
+            }
+        }
+
+        async function buyOrSelectTurret(turretId, cost) {
+            unlockBrowserAudio();
+            if (!dbState.unlockedTurrets) { dbState.unlockedTurrets = ["classic"]; dbState.activeTurret = "classic"; }
+            const isUnlocked = dbState.unlockedTurrets.includes(turretId);
+            if (isUnlocked) { dbState.activeTurret = turretId; await savePlayerState(); playBeep(659.25, 0.15); updateShopUI(); } 
+            else {
+                if (dbState.coins < cost) { showCustomAlert("שגיאה", "אין לך מספיק מטבעות!"); playBeep(220, 0.2, "sawtooth"); return; }
+                dbState.coins -= cost; dbState.unlockedTurrets.push(turretId); dbState.activeTurret = turretId;
+                await savePlayerState(); playBeep(880, 0.2); updateShopUI();
+            }
+        }
+
+        async function buyOrSelectMinion(minionId, cost) {
+            unlockBrowserAudio();
+            const isUnlocked = dbState.unlockedMinions && dbState.unlockedMinions.includes(minionId);
+            const isActive = dbState.activeMinion === minionId;
+            if (isActive) { dbState.activeMinion = "none"; await savePlayerState(); playBeep(330, 0.15, "sawtooth"); updateShopUI(); } 
+            else if (isUnlocked) { dbState.activeMinion = minionId; await savePlayerState(); playBeep(659.25, 0.15); updateShopUI(); } 
+            else {
+                if (dbState.coins < cost) { showCustomAlert("שגיאה", "אין לך מספיק מטבעות!"); playBeep(220, 0.2, "sawtooth"); return; }
+                dbState.coins -= cost; dbState.unlockedMinions.push(minionId); dbState.activeMinion = minionId;
+                await savePlayerState(); playBeep(880, 0.2); updateShopUI();
+            }
+        }
+
+        function updateShopUI() {
+            document.getElementById("shopCoins").innerText = dbState.coins;
+            ["armor", "engine", "turret"].forEach(type => {
+                const lvl = dbState.upgrades[type];
+                const dots = document.getElementById(`progress-${type}`)?.getElementsByClassName("progress-dot");
+                if(dots) for (let i = 0; i < dots.length; i++) { if (i < lvl) dots[i].classList.add("active"); else dots[i].classList.remove("active"); }
+                const btn = document.getElementById(`btn-upgrade-${type}`);
+                if (btn) { if (lvl >= 3) { btn.innerText = "Max"; btn.classList.add("maxed"); btn.disabled = true; } else { btn.innerText = "300 🪙"; btn.classList.remove("maxed"); btn.disabled = false; } }
+            });
+
+            const skins = { classic:0, forest:400, gold:800, purple:1000, rainbow:1500, lava:1800, matrix:900, tiger:1200, galaxy:2000 };
+            for(let id in skins) updateSkinButton(id, `btn-skin-${id}`, skins[id]);
+
+            const hulls = { classic:0, wasp:1000, hunter:1500, mammoth:2500 };
+            for(let id in hulls) updateHullButton(id, `btn-hull-${id}`, hulls[id]);
+
+            const turrets = { classic:0, railgun:1200, twins:1800, thunder:2200, shaft:2000 };
+            for(let id in turrets) updateTurretButton(id, `btn-turret-${id}`, turrets[id]);
+
+            const minions = { pinky:1500, magneto:2000 };
+            for(let id in minions) updateMinionButton(id, `btn-minion-${id}`, minions[id]);
+        }
+
+        function updateSkinButton(id, btnId, cost) {
+            const btn = document.getElementById(btnId); if (!btn) return;
+            const isUnlocked = dbState.unlockedSkins.includes(id), isActive = dbState.activeSkin === id;
+            if (isActive) { btn.innerText = "פעיל 🎨"; btn.className = "shop-buy-btn selected"; btn.disabled = true; } 
+            else if (isUnlocked) { btn.innerText = "בחר 🖌️"; btn.className = "shop-buy-btn"; btn.style.background = "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)"; btn.style.color = "white"; btn.style.borderColor = "#111827"; btn.disabled = false; } 
+            else { btn.innerText = `${cost} 🪙`; btn.className = "shop-buy-btn"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; btn.disabled = false; }
+        }
+
+        function updateHullButton(id, btnId, cost) {
+            const btn = document.getElementById(btnId); if (!btn) return;
+            if (!dbState.unlockedHulls) { dbState.unlockedHulls = ["classic"]; dbState.activeHull = "classic"; }
+            const isUnlocked = dbState.unlockedHulls.includes(id), isActive = dbState.activeHull === id;
+            if (isActive) { btn.innerText = "פעיל 🚜"; btn.className = "shop-buy-btn selected"; btn.disabled = true; } 
+            else if (isUnlocked) { btn.innerText = "בחר 🛠️"; btn.className = "shop-buy-btn"; btn.style.background = "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)"; btn.style.color = "white"; btn.style.borderColor = "#111827"; btn.disabled = false; } 
+            else { btn.innerText = `${cost} 🪙`; btn.className = "shop-buy-btn"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; btn.disabled = false; }
+        }
+
+        function updateTurretButton(id, btnId, cost) {
+            const btn = document.getElementById(btnId); if (!btn) return;
+            if (!dbState.unlockedTurrets) { dbState.unlockedTurrets = ["classic"]; dbState.activeTurret = "classic"; }
+            const isUnlocked = dbState.unlockedTurrets.includes(id), isActive = dbState.activeTurret === id;
+            if (isActive) { btn.innerText = "פעיל 🔫"; btn.className = "shop-buy-btn selected"; btn.disabled = true; } 
+            else if (isUnlocked) { btn.innerText = "בחר 🛠️"; btn.className = "shop-buy-btn"; btn.style.background = "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)"; btn.style.color = "white"; btn.style.borderColor = "#111827"; btn.disabled = false; } 
+            else { btn.innerText = `${cost} 🪙`; btn.className = "shop-buy-btn"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; btn.disabled = false; }
+        }
+
+        function updateMinionButton(id, btnId, cost) {
+            const btn = document.getElementById(btnId); if (!btn) return;
+            const isUnlocked = dbState.unlockedMinions && dbState.unlockedMinions.includes(id), isActive = dbState.activeMinion === id;
+            if (isActive) { btn.innerText = "פעיל 👾"; btn.className = "shop-buy-btn selected"; btn.disabled = false; } 
+            else if (isUnlocked) { btn.innerText = "בחר 🌀"; btn.className = "shop-buy-btn"; btn.style.background = "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)"; ctx.fillStyle = "white"; btn.style.borderColor = "#111827"; btn.disabled = false; } 
+            else { btn.innerText = `${cost} 🪙`; btn.className = "shop-buy-btn"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; btn.disabled = false; }
+        }
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                else await signInAnonymously(auth);
+            } catch (e) { switchToLocalMode("נכשלה התחברות מאובטחת"); }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => { if (user) { loadUserLists(); loadPlayerState(currentUsername); } });
+
+        function processAndStart() {
+            unlockBrowserAudio(); 
+            const nameInput = document.getElementById("playerName").value.trim(), passInput = document.getElementById("playerPassword").value;
+            if (nameInput.length === 0) return showCustomAlert("שגיאה", "אנא הקלד שם משתמש תקני!");
+            if (passInput.length < 4) return showCustomAlert("אבטחה", "הסיסמה חייבת להכיל לפחות 4 תווים!");
+
+            if (authMode === "register") {
+                dbState = getDefaultState(); savePlayerState(); 
+                showCustomAlert("הרשמה מוצלחת!", `ברוך הבא, ${nameInput}!\nחשבונך נוצר ואומת בבטחה. המשחק מתחיל!`); setAuthMode('login'); 
+            }
+
+            const lines = document.getElementById("wordInput").value.split('\n');
+            words = lines.map(l => ({q: l.split('=')[0]?.trim(), a: l.split('=')[1]?.trim()})).filter(o => o.q && o.a);
+            if (words.length < 3) return showCustomAlert("התראה", "אנא הזן לפחות 3 מילים תקינות בפורמט (מילה=תרגום)");
+            
+            document.getElementById("start-screen").style.display = "none"; document.getElementById("g").style.display = "block"; document.getElementById("ui").style.display = "flex";
+            const pauseBtn = document.getElementById("pauseBtn");
+            pauseBtn.innerText = "השהה ⏸️"; pauseBtn.style.background = "#3b82f6"; pauseBtn.style.display = "inline-block";
+            
+            gameRunning = true; alive = true; gamePaused = false;
+            resetGame(); resizeGame(); animate();
+            playBeep(440, 0.1); setTimeout(() => playBeep(554.37, 0.1), 100); setTimeout(() => playBeep(659.25, 0.2), 200);
+        }
+
+        // --- מנגנוני המשחק והגרפיקה ---
+        function addTreadMark(x, y, angle) {
+            treadMarks.push({ x: x, y: y, angle: angle, alpha: 1.0 });
+            if (treadMarks.length > 300) treadMarks.shift();
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 20; i++) particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, radius: Math.random() * 5 + 2, alpha: 1, decay: Math.random() * 0.03 + 0.015, color: color });
+        }
+
+        function resetGame() {
+            const totalHp = 5 + dbState.upgrades.armor;
+            tank = { x: 500, y: 600, angle: -Math.PI/2, hp: totalHp, maxHp: totalHp, iFrames: 0 };
+            enemies = []; bullets = []; enemyBullets = []; score = 0; keys = {}; gifts = [];
+            treadMarks = []; particles = []; screenShake = 0;
+            walls = [{x: 150, y: 200, w: 40, h: 250}, {x: 810, y: 200, w: 40, h: 250}, {x: 350, y: 400, w: 300, h: 40}];
+            [{x:100,y:100},{x:900,y:100},{x:500,y:100}].forEach(p => enemies.push({ x:p.x, y:p.y, startX:p.x, startY:p.y, angle:Math.PI/2, text:"", answer:"", speed:1.4, targetAngle:Math.PI/2, decisionTimer:0, aiState: "wander", aiTimer: Math.random() * 100 }));
+            document.getElementById("score").innerText = score; updateHPRender(); updateTopCoinsUI(); nextWord();
+        }
+
+        function nextWord() {
+            current = words[Math.floor(Math.random() * words.length)]; document.getElementById("target").innerText = current.q;
+            let answers = [current.a];
+            while(answers.length < 3) { let randomPair = words[Math.floor(Math.random() * words.length)]; if (!answers.includes(randomPair.a)) answers.push(randomPair.a); }
+            answers.sort(() => Math.random() - 0.5);
+            enemies.forEach((e, idx) => { e.x = e.startX; e.y = e.startY; e.answer = answers[idx] || ""; });
+            if (autoAudio) setTimeout(speakWord, 300);
+        }
+
+        function updateHPRender() {
+            let hpStr = ""; let fullHearts = Math.floor(tank.hp);
+            for(let i=0; i<fullHearts; i++) hpStr += "❤️";
+            if(tank.hp % 1 !== 0) hpStr += "💔";
+            document.getElementById("hp").innerText = hpStr || "💀";
+        }
+
+        window.addEventListener("keydown", e => {
+            if(window.activeGame !== 'tanks' || !gameRunning || gamePaused) return;
+            keys[e.key] = true;
+            if(e.key === " ") {
+                const now = Date.now(); const cooldown = 450 - (dbState.upgrades.turret * 80);
+                if (now - lastShotTime > cooldown) {
+                    bullets.push({x: tank.x + Math.cos(tank.angle)*25, y: tank.y + Math.sin(tank.angle)*25, vx: Math.cos(tank.angle)*6, vy: Math.sin(tank.angle)*6, isFromMinion: false});
+                    playBeep(180, 0.1, "triangle"); lastShotTime = now;
+                }
+                e.preventDefault();
+            }
+        });
+        window.addEventListener("keyup", e => { if (keys) keys[e.key] = false; });
+
+        function collidesWithWalls(x, y, r) {
+            for(let w of walls) if(x + r > w.x && x - r < w.x + w.w && y + r > w.y && y - r < w.y + w.h) return true;
+            return x - r < 0 || x + r > canvas.width || y - r < 0 || y + r > canvas.height;
+        }
+
+        function checkGameOver() {
+            if (tank.hp <= 0 && alive) {
+                alive = false; gameRunning = false; document.getElementById("finalScore").innerText = score;
+                document.getElementById("overlay").style.display = "block"; document.getElementById("pauseBtn").style.display = "none";
+                playBeep(150, 0.6, "sawtooth");
+            }
+        }
+
+        function update() {
+            if (tank.iFrames > 0) tank.iFrames--;
+            if (screenShake > 0) screenShake *= 0.9;
+            gameFrame++; 
+
+            let speed = 2.5 + (dbState.upgrades.engine * 0.4); let dx = 0; let dy = 0; let moved = false;
+            if (keys["ArrowUp"] || keys["KeyW"]) { dx += Math.cos(tank.angle) * speed; dy += Math.sin(tank.angle) * speed; moved = true; }
+            if (keys["ArrowDown"] || keys["KeyS"]) { dx -= Math.cos(tank.angle) * speed; dy -= Math.sin(tank.angle) * speed; moved = true; }
+            if (keys["ArrowLeft"] || keys["KeyA"]) { tank.angle -= 0.05; moved = true; }
+            if (keys["ArrowRight"] || keys["KeyD"]) { tank.angle += 0.05; moved = true; }
+
+            if (!collidesWithWalls(tank.x + dx, tank.y, TANK_RADIUS)) tank.x += dx;
+            if (!collidesWithWalls(tank.x, tank.y + dy, TANK_RADIUS)) tank.y += dy;
+
+            tank.x = Math.max(TANK_RADIUS + 4, Math.min(canvas.width - TANK_RADIUS - 4, tank.x));
+            tank.y = Math.max(TANK_RADIUS + 4, Math.min(canvas.height - TANK_RADIUS - 4, tank.y));
+
+            if (moved && Math.random() < 0.3) addTreadMark(tank.x, tank.y, tank.angle);
+
+            if (dbState.activeMinion === "pinky") {
+                const now = Date.now();
+                if (now - lastMinionShotTime > 1200 && enemies.length > 0) {
+                    let targetEnemy = null; enemies.forEach(e => { if (e.answer === current.a) targetEnemy = e; });
+                    if (targetEnemy) {
+                        let minionAngle = Math.atan2(targetEnemy.y - tank.y, targetEnemy.x - tank.x);
+                        let minionX = tank.x + Math.cos(tank.angle - Math.PI / 2) * 35; let minionY = tank.y + Math.sin(tank.angle - Math.PI / 2) * 35;
+                        bullets.push({ x: minionX, y: minionY, vx: Math.cos(minionAngle) * 5, vy: Math.sin(minionAngle) * 5, isFromMinion: true });
+                        playBeep(320, 0.08, "sine"); lastMinionShotTime = now;
+                    }
+                }
+            }
+
+            treadMarks.forEach((tm, idx) => { tm.alpha -= 0.002; if (tm.alpha <= 0) treadMarks.splice(idx, 1); });
+            particles.forEach((p, idx) => { p.x += p.vx; p.y += p.vy; p.alpha -= p.decay; if (p.alpha <= 0) particles.splice(idx, 1); });
+
+            bullets.forEach((b, idx) => {
+                b.x += b.vx; b.y += b.vy;
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) { bullets.splice(idx, 1); return; }
+                if(collidesWithWalls(b.x, b.y, 2)) { createExplosion(b.x, b.y, b.isFromMinion ? "#f472b6" : "#facc15"); bullets.splice(idx, 1); }
+            });
+
+            enemyBullets.forEach((eb, idx) => {
+                eb.x += eb.vx; eb.y += eb.vy;
+                if (eb.x < 0 || eb.x > canvas.width || eb.y < 0 || eb.y > canvas.height) { enemyBullets.splice(idx, 1); return; }
+                let dist = Math.hypot(eb.x - tank.x, eb.y - tank.y);
+                if(dist < TANK_RADIUS) {
+                    if(tank.iFrames === 0) {
+                        tank.hp -= 0.5; tank.iFrames = 60; screenShake = 10; createExplosion(tank.x, tank.y, "#ef4444"); updateHPRender(); playBeep(250, 0.2, "sawtooth"); checkGameOver();
+                    }
+                    enemyBullets.splice(idx, 1);
+                } else if(collidesWithWalls(eb.x, eb.y, 2)) { createExplosion(eb.x, eb.y, "#ef4444"); enemyBullets.splice(idx, 1); }
+            });
+
+            gifts.forEach((g, idx) => {
+                let dist = Math.hypot(g.x - tank.x, g.y - tank.y);
+                const magnetActive = dbState.activeMinion === "magneto"; const attractRange = magnetActive ? 220 : (TANK_RADIUS + 15);
+                if (magnetActive && dist < attractRange && dist > (TANK_RADIUS + 15)) {
+                    let angleToPlayer = Math.atan2(tank.y - g.y, tank.x - g.x); g.x += Math.cos(angleToPlayer) * 5; g.y += Math.sin(angleToPlayer) * 5;
+                } else if (dist <= (TANK_RADIUS + 15)) {
+                    if(tank.hp < tank.maxHp) tank.hp = Math.min(tank.maxHp, tank.hp + 1);
+                    score += 20; dbState.coins += 20; savePlayerState(); document.getElementById("score").innerText = score; updateHPRender(); updateTopCoinsUI(); playBeep(880, 0.15); gifts.splice(idx, 1);
+                }
+            });
+
+            enemies.forEach(e => {
+                e.decisionTimer--;
+                if(e.decisionTimer <= 0) {
+                    let distToPlayer = Math.hypot(tank.x - e.x, tank.y - e.y);
+                    if(distToPlayer < 350) {
+                        e.targetAngle = Math.atan2(tank.y - e.y, tank.x - e.x);
+                        if(Math.random() < 0.3) enemyBullets.push({x: e.x + Math.cos(e.targetAngle)*25, y: e.y + Math.sin(e.targetAngle)*25, vx: Math.cos(e.targetAngle)*4, vy: Math.sin(e.targetAngle)*4});
+                    } else e.targetAngle = Math.random() * Math.PI * 2;
+                    e.decisionTimer = 40 + Math.random() * 60;
+                }
+
+                e.angle += (e.targetAngle - e.angle) * 0.05;
+                let edx = Math.cos(e.angle) * e.speed, edy = Math.sin(e.angle) * e.speed;
+                let enemyMoved = false;
+                if (!collidesWithWalls(e.x + edx, e.y, TANK_RADIUS)) { e.x += edx; enemyMoved = true; } else e.targetAngle = Math.random() * Math.PI * 2; 
+                if (!collidesWithWalls(e.x, e.y + edy, TANK_RADIUS)) { e.y += edy; enemyMoved = true; } else e.targetAngle = Math.random() * Math.PI * 2;
+
+                if (enemyMoved && Math.random() < 0.1) addTreadMark(e.x, e.y, e.angle);
+                e.x = Math.max(TANK_RADIUS + 4, Math.min(canvas.width - TANK_RADIUS - 4, e.x));
+                e.y = Math.max(TANK_RADIUS + 4, Math.min(canvas.height - TANK_RADIUS - 4, e.y));
+
+                bullets.forEach((b, bIdx) => {
+                    if(Math.hypot(b.x - e.x, b.y - e.y) < TANK_RADIUS) {
+                        bullets.splice(bIdx, 1); createExplosion(e.x, e.y, b.isFromMinion ? "#f472b6" : e.answer === current.a ? "#facc15" : "#ef4444");
+                        if(e.answer === current.a) {
+                            score += 10; dbState.coins += 10; savePlayerState(); playBeep(700, 0.2);
+                            if(Math.random() < 0.4 && gifts.length < 2) gifts.push({x: e.x, y: e.y});
+                            nextWord();
+                        } else {
+                            if (!b.isFromMinion) { tank.hp -= 0.5; screenShake = 6; updateHPRender(); playBeep(200, 0.3, "sawtooth"); checkGameOver(); nextWord(); }
+                        }
+                        document.getElementById("score").innerText = score; updateTopCoinsUI();
+                    }
+                });
+            });
+        }
+
+        function drawTank(x, y, angle, skinId, hullId, turretId, isPlayer) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            let color = "#3b82f6"; let isAnimatedColor = false;
+            if (isPlayer) {
+                if (skinId === "forest") color = "#22c55e";
+                else if (skinId === "gold") color = "#facc15";
+                else if (skinId === "purple") color = "#a855f7";
+                else if (skinId === "rainbow") { color = `hsl(${(Date.now() / 12) % 360}, 95%, 55%)`; isAnimatedColor = true; } 
+                else if (skinId === "lava") { let wave = Math.sin(Date.now() / 120) * 25; color = `rgb(${210 + wave}, ${60 + wave / 2}, 15)`; isAnimatedColor = true; } 
+                else if (skinId === "matrix") { let step = Math.floor(Date.now() / 80) % 5; color = `rgb(16, ${160 + step * 20}, 40)`; isAnimatedColor = true; } 
+                else if (skinId === "galaxy") { let wave = Math.sin(Date.now() / 150) * 30; color = `rgb(${99 + wave}, 70, ${180 - wave})`; isAnimatedColor = true; } 
+                else if (skinId === "tiger") color = "#f97316"; 
+            } else color = "#ef4444"; 
+
+            const activeHull = isPlayer ? hullId : "classic"; const activeTurret = isPlayer ? turretId : "classic";
+            ctx.fillStyle = color; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5;
+
+            // Hulls
+            if (activeHull === "classic") {
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(-22, -18, 44, 5); ctx.fillRect(-22, 13, 44, 5); ctx.fillStyle = "#475569";
+                let wheelOffset = (gameFrame % 6);
+                for (let i = -18 + wheelOffset; i <= 18; i += 6) { ctx.beginPath(); ctx.arc(i, -15.5, 2.5, 0, Math.PI * 2); ctx.arc(i, 15.5, 2.5, 0, Math.PI * 2); ctx.fill(); }
+                ctx.fillStyle = color; ctx.fillRect(-18, -14, 36, 28); ctx.strokeRect(-18, -14, 36, 28); ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(-18, -2, 36, 4); 
+            } 
+            else if (activeHull === "wasp") {
+                ctx.fillStyle = "#0f172a"; ctx.fillRect(-18, -16, 36, 3); ctx.fillRect(-18, 13, 36, 3);
+                ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(16, -12); ctx.lineTo(20, -6); ctx.lineTo(20, 6); ctx.lineTo(16, 12); ctx.lineTo(-18, 14); ctx.lineTo(-14, 0); ctx.lineTo(-18, -14); ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#38bdf8"; ctx.beginPath(); ctx.arc(-13, -7, 2, 0, Math.PI * 2); ctx.arc(-13, 7, 2, 0, Math.PI * 2); ctx.fill();
+            } 
+            else if (activeHull === "hunter") {
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(-22, -18, 44, 4); ctx.fillRect(-22, 14, 44, 4);
+                ctx.fillStyle = color; ctx.fillRect(-20, -14, 40, 28); ctx.strokeRect(-20, -14, 40, 28);
+                ctx.fillStyle = "#22c55e"; ctx.fillRect(18, -11, 2, 3); ctx.fillRect(18, 8, 2, 3);
+            } 
+            else if (activeHull === "mammoth") {
+                ctx.fillStyle = "#090d16"; ctx.fillRect(-26, -21, 52, 7); ctx.fillRect(-26, 14, 52, 7);
+                ctx.fillStyle = "#334155"; let wheelOffset = (gameFrame % 8); for (let i = -22 + wheelOffset; i <= 22; i += 7) { ctx.fillRect(i, -21, 3, 7); ctx.fillRect(i, 14, 3, 7); }
+                ctx.fillStyle = color; ctx.fillRect(-21, -15, 42, 30); ctx.strokeRect(-21, -15, 42, 30);
+                ctx.fillStyle = "#1e293b"; ctx.beginPath(); ctx.moveTo(21, -15); ctx.lineTo(26, -10); ctx.lineTo(26, 10); ctx.lineTo(21, 15); ctx.closePath(); ctx.fill(); ctx.stroke();
+            }
+
+            // Turrets
+            ctx.fillStyle = isPlayer ? "#1e3a8a" : "#7f1d1d"; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5;
+            if (activeTurret === "classic") {
+                ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(26, 0); ctx.stroke();
+                ctx.fillStyle = "#475569"; ctx.fillRect(12, -2.5, 5, 5);
+            } 
+            else if (activeTurret === "railgun") {
+                ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-4, -7); ctx.lineTo(-9, 0); ctx.lineTo(-4, 7); ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(28, 0); ctx.stroke();
+                ctx.strokeStyle = `hsl(${(Date.now() / 8) % 360}, 100%, 65%)`; ctx.lineWidth = 2; let ringX = 14 + Math.sin(Date.now() / 60) * 4; ctx.beginPath(); ctx.arc(ringX, 0, 4, 0, Math.PI * 2); ctx.stroke();
+            } 
+            else if (activeTurret === "twins") {
+                ctx.fillRect(-7, -9, 14, 18); ctx.strokeRect(-7, -9, 14, 18);
+                ctx.fillStyle = "#4b5563"; ctx.fillRect(7, -6, 20, 4); ctx.fillRect(7, 2, 20, 4); ctx.strokeRect(7, -6, 20, 4); ctx.strokeRect(7, 2, 20, 4);
+                ctx.fillStyle = "#ec4899"; ctx.beginPath(); ctx.arc(-2, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+            } 
+            else if (activeTurret === "thunder") {
+                ctx.beginPath(); ctx.arc(1, 0, 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#374151"; ctx.fillRect(1, -4.5, 23, 9); ctx.strokeRect(1, -4.5, 23, 9);
+                ctx.fillStyle = "#111827"; ctx.fillRect(21, -5.5, 4, 11);
+            } 
+            else if (activeTurret === "shaft") {
+                ctx.fillRect(-8, -7, 16, 14); ctx.strokeRect(-8, -7, 16, 14);
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(8, -2.5, 22, 5); ctx.strokeRect(8, -2.5, 22, 5);
+                ctx.fillStyle = "#ef4444"; ctx.fillRect(4, -6, 3, 3);
+            }
+
+            if (skinId === "tiger" && isPlayer) {
+                ctx.fillStyle = "rgba(15, 23, 42, 0.75)"; ctx.fillRect(-10, -11, 3, 22); ctx.fillRect(0, -11, 3, 22); ctx.fillRect(10, -11, 3, 22);
+            }
+            ctx.restore();
+        }
+
+        function drawMinion(tx, ty, tankAngle, minionId) {
+            ctx.save(); let orbitRadius = 35; let orbitAngle = (Date.now() / 400) % (Math.PI * 2); let mx = tx + Math.cos(orbitAngle) * orbitRadius; let my = ty + Math.sin(orbitAngle) * orbitRadius;
+            ctx.translate(mx, my); ctx.rotate(tankAngle);
+            if (minionId === "pinky") {
+                ctx.fillStyle = "#f472b6"; ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(3, 0, 4, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#000000"; ctx.beginPath(); ctx.arc(4, 0, 1.5, 0, Math.PI * 2); ctx.fill();
+            } else if (minionId === "magneto") {
+                ctx.fillStyle = "#38bdf8"; ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#e0f2fe"; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 13 + Math.sin(Date.now() / 80) * 2, 0, Math.PI * 2); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.save();
+            if (screenShake > 0.5) { let dx = (Math.random() - 0.5) * screenShake; let dy = (Math.random() - 0.5) * screenShake; ctx.translate(dx, dy); }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            treadMarks.forEach(tm => {
+                ctx.save(); ctx.translate(tm.x, tm.y); ctx.rotate(tm.angle); ctx.fillStyle = `rgba(15, 23, 42, ${tm.alpha * 0.25})`;
+                ctx.fillRect(-12, -17, 24, 4); ctx.fillRect(-12, 13, 24, 4); ctx.restore();
+            });
+
+            walls.forEach(w => { ctx.fillStyle = "#475569"; ctx.fillRect(w.x, w.y, w.w, w.h); ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 4; ctx.strokeRect(w.x, w.y, w.w, w.h); });
+
+            gifts.forEach(g => { ctx.fillStyle = "#22c55e"; ctx.fillRect(g.x-10, g.y-10, 20, 20); ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.fillText("+", g.x - 5, g.y + 5); });
+
+            if(tank.iFrames === 0 || Math.floor(Date.now()/50)%2 === 0) drawTank(tank.x, tank.y, tank.angle, dbState.activeSkin, dbState.activeHull, dbState.activeTurret, true);
+
+            if (dbState.activeMinion !== "none") drawMinion(tank.x, tank.y, tank.angle, dbState.activeMinion);
+
+            enemies.forEach(e => {
+                drawTank(e.x, e.y, e.angle, "classic", "classic", "classic", false);
+                ctx.fillStyle = "white"; ctx.font = "bold 16px Arial"; ctx.textAlign = "center"; ctx.fillText(e.answer, e.x, e.y - 28);
+            });
+
+            bullets.forEach(b => { ctx.fillStyle = b.isFromMinion ? "#f472b6" : "#facc15"; ctx.beginPath(); ctx.arc(b.x, b.y, b.isFromMinion ? 3 : 4, 0, Math.PI * 2); ctx.fill(); });
+            enemyBullets.forEach(eb => { ctx.fillStyle = "#ef4444"; ctx.beginPath(); ctx.arc(eb.x, eb.y, 4, 0, Math.PI*2); ctx.fill(); });
+
+            particles.forEach(p => { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); });
+
+            ctx.strokeStyle = "#475569"; ctx.lineWidth = 10; ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        }
+
+        function animate() {
+            if(!gameRunning) return;
+            if(!gamePaused && window.activeGame === 'tanks') { update(); draw(); }
+            requestAnimationFrame(animate);
+        }
+
+        // Export Global Functions
+        window.processAndStart = processAndStart;
+        window.autoTranslateTanks = autoTranslate;
+        window.toggleLanguageDirection = toggleLanguageDirection;
+        window.toggleAutoAudio = toggleAutoAudio;
+        window.togglePause = togglePause;
+        window.restartGameFromPause = restartGameFromPause;
+        window.returnToMenuTanks = returnToMenu;
+        window.onLangModeChange = onLangModeChange;
+        window.showHelp = showHelp;
+        window.updateVolume = updateVolume;
+        window.loadSelectedList = loadSelectedList;
+        window.saveCurrentList = saveCurrentList;
+        window.deleteCurrentList = deleteCurrentList;
+        window.openShop = openShop;
+        window.closeShop = closeShop;
+        window.switchShopTab = switchShopTab;
+        window.buyUpgrade = buyUpgrade;
+        window.buyOrSelectSkin = buyOrSelectSkin;
+        window.buyOrSelectHull = buyOrSelectHull;
+        window.buyOrSelectTurret = buyOrSelectTurret;
+        window.buyOrSelectMinion = buyOrSelectMinion;
+        window.setAuthMode = setAuthMode;
+        window.onCredentialsChange = onCredentialsChange;
+
+    </script>
+</body>
+</html>
