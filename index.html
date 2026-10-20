@@ -82,6 +82,10 @@
         .game-card.tanks:hover { border-color: #facc15; box-shadow: 0 15px 40px rgba(250, 204, 21, 0.3); }
         .game-card.pacman:hover { border-color: #ffb8ff; box-shadow: 0 15px 40px rgba(255, 184, 255, 0.3); }
         .game-card.tinytanks:hover { border-color: #f59e0b; box-shadow: 0 15px 40px rgba(245, 158, 11, 0.3); }
+        .game-card.magen:hover { border-color: #60a5fa; box-shadow: 0 15px 40px rgba(96, 165, 250, 0.3); }
+        #magen-app { display:none; position:fixed; inset:0; width:100vw; height:100vh; z-index:20000; background:#0b0f19; }
+        #magen-app iframe { width:100%; height:100%; border:0; display:block; }
+        #magen-app .hub-btn-back { z-index:2147483647; }
 
         .game-card .icon {
             font-size: 64px;
@@ -494,6 +498,12 @@
                 <div class="icon">👻</div>
                 <h2>פקמן אנגלית</h2>
                 <p>אכול את התשובה הנכונה וברח מהרוחות. כולל מערכת תרגום חכמה להזנת רשימות מילים משלך!</p>
+            </div>
+
+            <div class="game-card magen" onclick="openGame('magen')">
+                <div class="icon">🛡️</div>
+                <h2>מגן העיר</h2>
+                <p>הקלד את הפירוש באנגלית כדי ליירט טילים ולהגן על העיר!</p>
             </div>
         </div>
     </div>
@@ -972,6 +982,14 @@ computer=מחשב</textarea>
 
 
     <!-- ==========================================
+         MAGEN HA'IR GAME (ORIGINAL EMBEDDED WITHOUT CHANGES)
+    =========================================== -->
+    <div id="magen-app">
+        <button class="hub-btn-back" onclick="returnToHub()">חזרה לאקדמיה</button>
+        <iframe id="magen-frame" title="מגן העיר"></iframe>
+    </div>
+
+    <!-- ==========================================
          GLOBAL HUB SCRIPTS
     =========================================== -->
     <script>
@@ -989,6 +1007,10 @@ computer=מחשב</textarea>
             } else if (gameName === 'tinytanks') {
                 document.getElementById('tiny-tanks-app').style.display = 'flex';
                 if (window.initTinyTanks) window.initTinyTanks();
+            } else if (gameName === 'magen') {
+                document.getElementById('magen-app').style.display = 'block';
+                const frame = document.getElementById('magen-frame');
+                if (!frame.src || frame.src === 'about:blank') frame.src = 'data:text/html;charset=utf-8;base64,''' + base64.b64encode(game.encode('utf-8')).decode('ascii') + '''';
             }
         };
 
@@ -1010,6 +1032,7 @@ computer=מחשב</textarea>
             document.getElementById('tanks-app').style.display = 'none';
             document.getElementById('pacman-app').style.display = 'none';
             document.getElementById('tiny-tanks-app').style.display = 'none';
+            document.getElementById('magen-app').style.display = 'none';
             document.getElementById('main-hub').style.display = 'flex';
         };
     </script>
